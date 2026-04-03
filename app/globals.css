@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────
+   Tema Level Growth — Tailwind v4 CSS-first
+   ───────────────────────────────────────────── */
+@theme {
+  /* Fondos */
+  --color-lg-bg:           #080C14;
+  --color-lg-bg-secondary: #0D1221;
+  --color-lg-bg-tertiary:  #111827;
+
+  /* Acentos */
+  --color-lg-green:        #3FC87A;
+  --color-lg-green-dark:   #2BA86A;
+  --color-lg-blue:         #4A9EE0;
+  --color-lg-blue-dark:    #0D1F4A;
+
+  /* Texto */
+  --color-lg-text:           #FFFFFF;
+  --color-lg-text-secondary: #7A8FA6;
+  --color-lg-text-muted:     #4A6070;
+
+  /* Tipografía — variables inyectadas por next/font en layout.tsx */
+  --font-display: var(--font-syne), sans-serif;
+  --font-body:    var(--font-dm-sans), sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), monospace;
+
+  /* Border radius */
+  --radius-card:   12px;
+  --radius-button: 8px;
+  --radius-badge:  4px;
+}
+
+/* Variables CSS globales para uso directo */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-border:        rgba(255, 255, 255, 0.08);
+  --color-border-accent: rgba(63, 200, 122, 0.25);
+  --color-green-muted:   rgba(63, 200, 122, 0.12);
+
+  --gradient-hero:
+    radial-gradient(ellipse at 20% 50%, rgba(13, 31, 74, 0.6) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 50%, rgba(20, 80, 50, 0.3) 0%, transparent 60%);
+  --gradient-text:  linear-gradient(90deg, #3FC87A, #4A9EE0);
+  --gradient-cta:   linear-gradient(135deg, #2BA86A, #1a7a4e);
+  --gradient-card:  linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Reset base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #080C14;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Respetar preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Animación de entrada para el Hero — no requiere JS */
+@keyframes fade-up-hero {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Clases utilitarias de gradiente de texto */
+.gradient-text {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
