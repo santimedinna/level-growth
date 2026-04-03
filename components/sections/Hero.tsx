@@ -114,7 +114,11 @@ export function Hero() {
           style={anim("0.22s")}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
         >
-          <Button href="/contacto" size="lg">
+          <Button
+            href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
+            external
+            size="lg"
+          >
             Quiero mi auditoría gratis →
           </Button>
           <Button href="#caso-de-exito" variant="secondary" size="lg">

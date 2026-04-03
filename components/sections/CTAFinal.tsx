@@ -50,11 +50,23 @@ export function CTAFinal() {
             Y si no encontramos nada para mejorar, te lo decimos.
           </motion.p>
 
-          {/* CTA */}
+          {/* CTA principal */}
           <motion.div variants={fadeUp}>
             <Button href="/contacto" size="lg">
               Quiero mi auditoría gratis →
             </Button>
+          </motion.div>
+
+          {/* Link secundario WhatsApp */}
+          <motion.div variants={fadeUp}>
+            <a
+              href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-body text-sm text-lg-text-muted hover:text-lg-green transition-colors duration-200"
+            >
+              ¿Preferís respuesta inmediata? Escribinos por WhatsApp →
+            </a>
           </motion.div>
         </motion.div>
       </div>

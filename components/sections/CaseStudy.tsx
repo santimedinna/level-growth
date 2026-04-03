@@ -142,7 +142,11 @@ export function CaseStudy() {
 
           {/* CTA */}
           <motion.div variants={fadeUp}>
-            <Button href="/contacto" size="lg">
+            <Button
+              href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
+              external
+              size="lg"
+            >
               Quiero que analicen mi negocio →
             </Button>
           </motion.div>
