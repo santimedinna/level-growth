@@ -57,16 +57,16 @@ export function CTAFinal() {
             </Button>
           </motion.div>
 
-          {/* Link secundario WhatsApp */}
+          {/* Botón secundario WhatsApp */}
           <motion.div variants={fadeUp}>
-            <a
+            <Button
               href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-body text-sm text-lg-text-muted hover:text-lg-green transition-colors duration-200"
+              external
+              variant="secondary"
+              size="md"
             >
-              ¿Preferís respuesta inmediata? Escribinos por WhatsApp →
-            </a>
+              Escribinos por WhatsApp →
+            </Button>
           </motion.div>
         </motion.div>
       </div>
