@@ -136,7 +136,7 @@ export async function POST(request: Request) {
           <p style="font-size:14px;color:#888;margin:0;border-top:1px solid #eee;padding-top:20px">
             Santiago<br>
             <strong style="color:#333">Level Growth</strong><br>
-            <a href="https://levelgrowth.com.ar" style="color:#3FC87A">levelgrowth.com.ar</a>
+            <a href="https://levelgrowthagency.com" style="color:#3FC87A">levelgrowthagency.com</a>
           </p>
         </div>
       `,
