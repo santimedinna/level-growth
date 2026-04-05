@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const FROM_EMAIL = process.env.FROM_EMAIL  ?? "contacto@levelgrowth.com.ar";
-const TO_EMAIL   = process.env.TO_EMAIL    ?? "contacto@levelgrowth.com.ar";
+const FROM_EMAIL = process.env.FROM_EMAIL ?? "santiago@levelgrowthagency.com";
+const TO_EMAIL   = process.env.TO_EMAIL   ?? "santiago@levelgrowthagency.com";
 
 /* ─── Mapa de opciones para el email ─────── */
 const necesidadLabel: Record<string, string> = {
@@ -49,43 +49,94 @@ export async function POST(request: Request) {
   /* Inicializar Resend solo cuando hay API key */
   const resend = new Resend(process.env.RESEND_API_KEY);
 
+  const necesidad = necesidadLabel[body.necesidad] ?? body.necesidad;
+
   try {
-    /* 4a. Email interno — notificación para el equipo */
+    /* ── EMAIL A: Notificación interna ───────── */
     await resend.emails.send({
       from:    `Level Growth <${FROM_EMAIL}>`,
       to:      TO_EMAIL,
-      subject: `Nueva consulta: ${necesidadLabel[body.necesidad] ?? body.necesidad} — ${body.nombre}`,
+      subject: `Nuevo lead — ${body.nombre}`,
       html: `
-        <h2 style="font-family:sans-serif;margin:0 0 16px">Nueva solicitud de contacto</h2>
-        <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:8px 0;color:#666">Nombre</td><td style="padding:8px 0"><strong>${body.nombre}</strong></td></tr>
-          <tr><td style="padding:8px 0;color:#666">Email</td><td style="padding:8px 0">${body.email}</td></tr>
-          ${body.whatsapp ? `<tr><td style="padding:8px 0;color:#666">WhatsApp</td><td style="padding:8px 0">${body.whatsapp}</td></tr>` : ""}
-          ${body.sitio ? `<tr><td style="padding:8px 0;color:#666">Sitio web</td><td style="padding:8px 0">${body.sitio}</td></tr>` : ""}
-          <tr><td style="padding:8px 0;color:#666">Necesidad</td><td style="padding:8px 0">${necesidadLabel[body.necesidad] ?? body.necesidad}</td></tr>
-        </table>
-        <h3 style="font-family:sans-serif;margin:16px 0 8px">Mensaje</h3>
-        <p style="font-family:sans-serif;font-size:14px;color:#333;line-height:1.6">${body.mensaje.replace(/\n/g, "<br>")}</p>
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px 0">
+          <h2 style="margin:0 0 24px;font-size:20px;color:#111">
+            Nuevo lead del formulario de contacto
+          </h2>
+
+          <table style="font-size:14px;border-collapse:collapse;width:100%;color:#333">
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888;width:130px">Nombre</td>
+              <td style="padding:10px 0"><strong>${body.nombre}</strong></td>
+            </tr>
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Email</td>
+              <td style="padding:10px 0">
+                <a href="mailto:${body.email}" style="color:#3FC87A">${body.email}</a>
+              </td>
+            </tr>
+            ${body.whatsapp ? `
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">WhatsApp</td>
+              <td style="padding:10px 0">
+                <a href="https://wa.me/${body.whatsapp.replace(/\D/g, "")}" style="color:#3FC87A">${body.whatsapp}</a>
+              </td>
+            </tr>` : ""}
+            ${body.sitio ? `
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Sitio web</td>
+              <td style="padding:10px 0">
+                <a href="${body.sitio}" style="color:#3FC87A" target="_blank">${body.sitio}</a>
+              </td>
+            </tr>` : ""}
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:10px 0;color:#888">Necesidad</td>
+              <td style="padding:10px 0">${necesidad}</td>
+            </tr>
+          </table>
+
+          <h3 style="margin:24px 0 8px;font-size:15px;color:#111">Descripción del negocio</h3>
+          <p style="font-size:14px;color:#333;line-height:1.7;margin:0;background:#f9f9f9;padding:14px 16px;border-radius:6px;border-left:3px solid #3FC87A">
+            ${body.mensaje.replace(/\n/g, "<br>")}
+          </p>
+        </div>
       `,
     });
 
-    /* 4b. Email de confirmación al usuario */
+    /* ── EMAIL B: Confirmación al prospecto ──── */
     await resend.emails.send({
-      from:    `Level Growth <${FROM_EMAIL}>`,
+      from:    `Santiago de Level Growth <${FROM_EMAIL}>`,
       to:      body.email,
       subject: "Recibimos tu consulta — Level Growth",
       html: `
-        <div style="font-family:sans-serif;max-width:520px;margin:0 auto">
-          <h2 style="color:#3FC87A;margin:0 0 16px">¡Hola, ${body.nombre}!</h2>
-          <p style="font-size:15px;color:#333;line-height:1.7;margin:0 0 16px">
-            Recibimos tu solicitud. En las próximas <strong>48 horas hábiles</strong>
-            te enviamos el diagnóstico de tu negocio.
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px 0;color:#333">
+          <p style="font-size:16px;margin:0 0 20px">Hola ${body.nombre},</p>
+
+          <p style="font-size:15px;line-height:1.7;margin:0 0 16px">
+            Recibimos tu consulta. Te respondo personalmente
+            en <strong>menos de 48 horas hábiles</strong> con un análisis de tu situación.
           </p>
-          <p style="font-size:15px;color:#333;line-height:1.7;margin:0 0 24px">
-            Si tenés alguna duda, respondé este email o escribinos directamente.
+
+          <p style="font-size:15px;line-height:1.7;margin:0 0 16px">
+            Si necesitás respuesta más rápida, podés escribirme directo por WhatsApp:
           </p>
-          <p style="font-size:13px;color:#888;margin:0">
-            — El equipo de Level Growth
+
+          <p style="margin:0 0 28px">
+            <a
+              href="https://wa.me/5493512613927"
+              style="display:inline-block;background:#25D366;color:white;font-size:14px;font-weight:600;padding:10px 20px;border-radius:6px;text-decoration:none"
+            >
+              Escribir por WhatsApp
+            </a>
+          </p>
+
+          <p style="font-size:15px;line-height:1.7;margin:0 0 32px">
+            Mientras tanto, si querés avanzar algo, contame un poco más sobre tu negocio respondiendo este email.
+          </p>
+
+          <p style="font-size:14px;color:#888;margin:0;border-top:1px solid #eee;padding-top:20px">
+            Santiago<br>
+            <strong style="color:#333">Level Growth</strong><br>
+            <a href="https://levelgrowth.com.ar" style="color:#3FC87A">levelgrowth.com.ar</a>
           </p>
         </div>
       `,
