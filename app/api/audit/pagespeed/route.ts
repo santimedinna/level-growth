@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 /* ─── Tipos ───────────────────────────────── */
 export interface PageSpeedResult {
   speedScore: number;
-  lossRange:  [number, number];
+  lcpMs:      number;   /* LCP real o proxy TTFB — usado para fórmula de escenario */
   source:     "pagespeed" | "ttfb" | "fallback";
 }
 
@@ -16,20 +16,12 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 const TTL   = 24 * 60 * 60 * 1000;
 
-/* ─── LCP/TTFB (ms) → rango de pérdida ───── */
-function msToLossRange(ms: number): [number, number] {
-  if (ms <= 1200) return [0,  5];
-  if (ms <= 2500) return [10, 25];
-  if (ms <= 4000) return [30, 50];
-  return [60, 80];
-}
-
 /* ─── Score PageSpeed 0-1 → 1-10 ─────────── */
 function psToTen(score: number): number {
   return Math.max(1, Math.min(10, Math.round(score * 10)));
 }
 
-/* ─── TTFB → speed score heurístico ─────── */
+/* ─── TTFB (ms) → speed score heurístico ─── */
 function ttfbToScore(ms: number): number {
   if (ms < 300)  return 9;
   if (ms < 600)  return 7;
@@ -78,7 +70,7 @@ export async function GET(request: Request) {
 
         const result: PageSpeedResult = {
           speedScore: psToTen(perf),
-          lossRange:  msToLossRange(lcpMs),
+          lcpMs,
           source:     "pagespeed",
         };
 
@@ -90,12 +82,12 @@ export async function GET(request: Request) {
     }
   }
 
-  /* ── Intento 2: TTFB propio como proxy de velocidad ── */
+  /* ── Intento 2: TTFB propio como proxy ── */
   try {
     const controller = new AbortController();
     const timeout    = setTimeout(() => controller.abort(), 15_000);
 
-    const start  = Date.now();
+    const start    = Date.now();
     const probeRes = await fetch(url, {
       method:  "GET",
       headers: { "User-Agent": "Mozilla/5.0 (compatible; LevelGrowthAudit/1.0; +https://levelgrowthagency.com)" },
@@ -104,13 +96,14 @@ export async function GET(request: Request) {
     const ttfb = Date.now() - start;
     clearTimeout(timeout);
 
-    /* Consumir body para liberar la conexión */
     await probeRes.text().catch(() => {});
 
-    const score = ttfbToScore(ttfb);
+    /* TTFB ~= LCP/3 (heurística conservadora) */
+    const estimatedLcp = ttfb * 3;
+
     const result: PageSpeedResult = {
-      speedScore: score,
-      lossRange:  msToLossRange(ttfb),
+      speedScore: ttfbToScore(ttfb),
+      lcpMs:      estimatedLcp,
       source:     "ttfb",
     };
 
@@ -121,6 +114,6 @@ export async function GET(request: Request) {
   }
 
   /* ── Fallback final: no bloquear al usuario ─ */
-  const fallback: PageSpeedResult = { speedScore: 5, lossRange: [10, 25], source: "fallback" };
+  const fallback: PageSpeedResult = { speedScore: 5, lcpMs: 3000, source: "fallback" };
   return NextResponse.json(fallback);
 }

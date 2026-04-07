@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { FormFriction } from "@/app/api/audit/copy/route";
 
 /* ─── Constantes ──────────────────────────── */
 const WA_URL =
@@ -16,20 +17,55 @@ const LOADING_MESSAGES = [
 
 /* ─── Tipos ───────────────────────────────── */
 type Step = "input" | "loading" | "results";
+type Level = "red" | "yellow" | "green";
+
+type Scenario =
+  | "optimal"
+  | "puerta-giratoria"
+  | "cuello-de-botella"
+  | "abismo";
 
 interface AuditResults {
-  speed:     number;
-  seo:       number;
-  copy:      number;
-  cta:       number;
-  lossRange: [number, number];
+  speed:             number;
+  seo:               number;
+  copy:              number;
+  cta:               number;
+  lcpMs:             number;
+  hasSocialProof:    boolean;
+  hicksLawViolation: boolean;
+  formFriction:      FormFriction;
 }
 
-/* ─── Mensajes de negocio por categoría ───── */
-type Category = "speed" | "seo" | "copy" | "cta";
-type Level    = "red" | "yellow" | "green";
+/* ─── Semáforo ────────────────────────────── */
+function getLevel(score: number): Level {
+  if (score <= 4) return "red";
+  if (score <= 7) return "yellow";
+  return "green";
+}
 
-const MESSAGES: Record<Category, Record<Level, string>> = {
+const LEVEL_COLOR: Record<Level, string> = {
+  red:    "#EF4444",
+  yellow: "#F59E0B",
+  green:  "#3FC87A",
+};
+
+const LEVEL_LABEL: Record<Level, string> = {
+  red:    "Crítico",
+  yellow: "Mejorable",
+  green:  "Bueno",
+};
+
+function scoreColor(score: number) { return LEVEL_COLOR[getLevel(score)]; }
+function overallColor(score: number) {
+  if (score <= 40) return "#EF4444";
+  if (score <= 70) return "#F59E0B";
+  return "#3FC87A";
+}
+
+/* ─── Mensajes por categoría ──────────────── */
+type Category = "speed" | "seo" | "copy" | "cta";
+
+const BASE_MESSAGES: Record<Category, Record<Level, string>> = {
   speed: {
     red:    "Tu web tiene el freno de mano puesto. Según datos de Amazon y Google, cada segundo de carga extra te está costando hasta un 10% de tus ventas potenciales. El 90% de los usuarios abandona un sitio que tarda más de 5 segundos.",
     yellow: "Tu sitio carga bien en desktop pero tiene margen de mejora en mobile. El 70% de tus visitantes navegan desde el celular — cada segundo cuenta.",
@@ -52,42 +88,68 @@ const MESSAGES: Record<Category, Record<Level, string>> = {
   },
 };
 
-function getLevel(score: number): Level {
-  if (score <= 4) return "red";
-  if (score <= 7) return "yellow";
-  return "green";
+interface MsgFlags {
+  hasSocialProof:    boolean;
+  hicksLawViolation: boolean;
+  formFriction:      FormFriction;
 }
 
-function getMessage(cat: Category, score: number): string {
-  return MESSAGES[cat][getLevel(score)];
+function getMessage(cat: Category, score: number, flags: MsgFlags): string {
+  if (cat === "copy" && !flags.hasSocialProof) {
+    return "Tu web se siente sola. El cliente actual no te cree a vos, le cree a otros clientes. No mostrar testimonios o logos de marcas con las que trabajás es dejar dinero sobre la mesa.";
+  }
+  if (cat === "cta") {
+    if (flags.formFriction === "missing") {
+      return "Tu sitio no tiene una forma clara de contacto. El cliente que quiere comprarte no sabe cómo hacerlo.";
+    }
+    if (flags.formFriction === "too_many_fields") {
+      return "Estás pidiendo demasiado antes de dar algo. Tu formulario es una barrera, no un puente. Reducir los campos multiplica las consultas de inmediato.";
+    }
+    if (flags.hicksLawViolation) {
+      return "Tu hero tiene demasiadas opciones compitiendo. Al darle tantas decisiones al visitante en el primer vistazo, terminan sin elegir ninguna. Una sola acción dominante puede aumentar tus conversiones hasta un 20%.";
+    }
+  }
+  return BASE_MESSAGES[cat][getLevel(score)];
 }
 
-/* ─── Paleta de semáforo ──────────────────── */
-const LEVEL_COLOR: Record<Level, string> = {
-  red:    "#EF4444",
-  yellow: "#F59E0B",
-  green:  "#3FC87A",
+/* ─── Escenario combinado ─────────────────── */
+function getScenario(lcpMs: number, copyScore: number): Scenario {
+  const speedOk = lcpMs < 2500;
+  const copyOk  = copyScore > 6;
+  if (speedOk && copyOk)   return "optimal";
+  if (speedOk && !copyOk)  return "puerta-giratoria";
+  if (!speedOk && copyOk)  return "cuello-de-botella";
+  return "abismo";
+}
+
+function getLossRange(scenario: Scenario): [number, number] {
+  switch (scenario) {
+    case "optimal":           return [0,  10];
+    case "puerta-giratoria":  return [40, 60];
+    case "cuello-de-botella": return [65, 80];
+    case "abismo":            return [90, 95];
+  }
+}
+
+const SCENARIO_DATA: Record<Scenario, { name: string; color: string }> = {
+  "optimal":           { name: "Buen estado general",    color: "#3FC87A" },
+  "puerta-giratoria":  { name: "La Puerta Giratoria",    color: "#F59E0B" },
+  "cuello-de-botella": { name: "El Cuello de Botella",   color: "#F97316" },
+  "abismo":            { name: "El Abismo",              color: "#EF4444" },
 };
 
-const LEVEL_LABEL: Record<Level, string> = {
-  red:    "Crítico",
-  yellow: "Mejorable",
-  green:  "Bueno",
-};
-
-function scoreColor(score: number) { return LEVEL_COLOR[getLevel(score)]; }
-function overallColor(score: number) {
-  if (score <= 40) return "#EF4444";
-  if (score <= 70) return "#F59E0B";
-  return "#3FC87A";
-}
-
-/* ─── Mensaje de impacto en ventas ───────── */
-function impactMessage(lossRange: [number, number]): string {
-  const [min, max] = lossRange;
-  const minV = Math.round(500 * min / 100);
-  const maxV = Math.round(500 * max / 100);
-  return `Estimamos que tu sitio está perdiendo entre ${min}% y ${max}% de los visitantes que llegan. En un negocio con 500 visitas mensuales, eso son entre ${minV} y ${maxV} clientes potenciales que se van a la competencia cada mes.`;
+function getScenarioMessage(scenario: Scenario, lossRange: [number, number]): string {
+  const [min] = lossRange;
+  switch (scenario) {
+    case "optimal":
+      return "Tu sitio tiene buenas bases. Sin embargo, siempre hay oportunidades de mejora que marcan la diferencia entre una web que existe y una que vende activamente.";
+    case "puerta-giratoria":
+      return `Tu web es una puerta giratoria. Entra rápido, pero sale igual de rápido. Tenés el tráfico pero lo desperdiciás porque el mensaje no conecta con tu cliente. Cada mes que pasa así estás regalando el ${min}% de tu inversión en publicidad a la competencia.`;
+    case "cuello-de-botella":
+      return "Tu mensaje es bueno pero casi nadie llega a leerlo. La lentitud filtra a tus clientes por nivel de paciencia — y los impacientes son exactamente los que más compran. Estás perdiendo a tus mejores clientes antes de que vean tu propuesta.";
+    case "abismo":
+      return "Tu web tiene una doble fuga de capital. Primero, la lentitud expulsa al 70% de tus visitas antes de que cargue. Segundo, el mensaje no retiene a los pocos que logran entrar. Estás operando al 5% de tu capacidad real de ventas.";
+  }
 }
 
 /* ─── CountUp ─────────────────────────────── */
@@ -150,14 +212,16 @@ function ScoreCard({
 
 /* ─── Componente principal ────────────────── */
 export function AuditorTool() {
-  const [step,          setStep]          = useState<Step>("input");
-  const [url,           setUrl]           = useState("");
-  const [error,         setError]         = useState("");
-  const [msgIdx,        setMsgIdx]        = useState(0);
-  const [progress,      setProgress]      = useState(0);
-  const [results,       setResults]       = useState<AuditResults | null>(null);
+  const [step,    setStep]    = useState<Step>("input");
+  const [url,     setUrl]     = useState("");
+  const [error,   setError]   = useState("");
+  const [msgIdx,  setMsgIdx]  = useState(0);
+  const [progress,setProgress]= useState(0);
+  const [results, setResults] = useState<AuditResults | null>(null);
 
-  const overall = results
+  const scenario   = results ? getScenario(results.lcpMs, results.copy) : "optimal";
+  const lossRange  = results ? getLossRange(scenario) : [0, 10] as [number, number];
+  const overall    = results
     ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
     : 0;
 
@@ -172,7 +236,7 @@ export function AuditorTool() {
   useEffect(() => {
     if (step !== "loading") { setProgress(0); return; }
     const start = performance.now();
-    const dur   = 40_000; // 40s hasta 92%
+    const dur   = 40_000;
     let raf: number;
     const tick = (now: number) => {
       const p = Math.min((now - start) / dur, 0.92);
@@ -193,8 +257,6 @@ export function AuditorTool() {
 
     try {
       const normalized = url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`;
-
-      /* Validación básica de URL antes de llamar a las APIs */
       try { new URL(normalized); } catch {
         setError("La URL no parece válida. Probá con: tuempresa.com");
         setStep("input");
@@ -202,28 +264,28 @@ export function AuditorTool() {
       }
 
       const encoded = encodeURIComponent(normalized);
-
       const [psRes, copyRes] = await Promise.all([
         fetch(`/api/audit/pagespeed?url=${encoded}`),
         fetch(`/api/audit/copy?url=${encoded}`),
       ]);
 
-      /* Las rutas siempre devuelven 200 con datos o fallback — nunca lanzan */
       const ps   = await psRes.json();
       const copy = await copyRes.json();
 
       setResults({
-        speed:     ps.speedScore   ?? 5,
-        seo:       copy.seoScore   ?? 4,
-        copy:      copy.copyScore  ?? 4,
-        cta:       copy.ctaScore   ?? 4,
-        lossRange: ps.lossRange    ?? [10, 25],
+        speed:             ps.speedScore          ?? 5,
+        seo:               copy.seoScore          ?? 4,
+        copy:              copy.copyScore         ?? 4,
+        cta:               copy.ctaScore          ?? 4,
+        lcpMs:             ps.lcpMs               ?? 3000,
+        hasSocialProof:    copy.hasSocialProof    ?? false,
+        hicksLawViolation: copy.hicksLawViolation ?? false,
+        formFriction:      copy.formFriction      ?? "none",
       });
 
       setProgress(1);
       setTimeout(() => setStep("results"), 400);
     } catch (err) {
-      /* Solo llega acá si hay un error de red del lado del cliente */
       console.error("[audit]", err);
       setError("No pudimos conectarnos. Verificá tu conexión e intentá de nuevo.");
       setStep("input");
@@ -236,6 +298,10 @@ export function AuditorTool() {
     setUrl("");
     setError("");
   }
+
+  const flags: MsgFlags = results
+    ? { hasSocialProof: results.hasSocialProof, hicksLawViolation: results.hicksLawViolation, formFriction: results.formFriction }
+    : { hasSocialProof: true, hicksLawViolation: false, formFriction: "none" };
 
   return (
     <AnimatePresence mode="wait">
@@ -258,25 +324,19 @@ export function AuditorTool() {
               autoFocus
               aria-label="URL del sitio web a analizar"
               className="flex-1 font-body text-base text-white placeholder-[#4A6070] bg-[#0D1221] border border-white/[0.08] rounded-lg px-4 py-3.5 outline-none transition-all duration-200"
-              style={{ boxShadow: "none" }}
               onFocus={(e) => (e.target.style.borderColor = "rgba(63,200,122,0.4)")}
               onBlur={(e)  => (e.target.style.borderColor = "rgba(255,255,255,0.08)")}
             />
             <button
               type="submit"
               className="font-body font-medium text-sm text-white px-6 py-3.5 rounded-lg whitespace-nowrap transition-all duration-200 hover:brightness-110 active:brightness-95"
-              style={{
-                background:  "linear-gradient(135deg, #2BA86A, #1a7a4e)",
-                boxShadow:   "0 0 20px rgba(43,168,106,0.3)",
-              }}
+              style={{ background: "linear-gradient(135deg, #2BA86A, #1a7a4e)", boxShadow: "0 0 20px rgba(43,168,106,0.3)" }}
             >
               Analizar mi sitio gratis
             </button>
           </form>
 
-          {error && (
-            <p className="font-body text-sm text-[#EF4444] mt-3">{error}</p>
-          )}
+          {error && <p className="font-body text-sm text-[#EF4444] mt-3">{error}</p>}
 
           <p className="font-body text-xs text-[#4A6070] mt-3 text-center">
             Solo leemos tu sitio públicamente — no guardamos datos ni necesitamos acceso.
@@ -294,29 +354,20 @@ export function AuditorTool() {
           transition={{ duration: 0.35 }}
           className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] rounded-xl p-10 text-center"
         >
-          {/* Barra de progreso */}
           <div className="w-full bg-white/[0.06] rounded-full h-1 mb-10 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300 ease-out"
-              style={{
-                width:      `${Math.round(progress * 100)}%`,
-                background: "linear-gradient(90deg, #3FC87A, #4A9EE0)",
-              }}
+              style={{ width: `${Math.round(progress * 100)}%`, background: "linear-gradient(90deg, #3FC87A, #4A9EE0)" }}
             />
           </div>
 
-          {/* Spinner */}
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
             className="w-12 h-12 rounded-full mx-auto mb-7"
-            style={{
-              border:      "2px solid rgba(63,200,122,0.15)",
-              borderTop:   "2px solid #3FC87A",
-            }}
+            style={{ border: "2px solid rgba(63,200,122,0.15)", borderTop: "2px solid #3FC87A" }}
           />
 
-          {/* Mensaje rotativo */}
           <AnimatePresence mode="wait">
             <motion.p
               key={msgIdx}
@@ -347,8 +398,7 @@ export function AuditorTool() {
           {/* URL analizada + resetear */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
             <p className="font-body text-sm text-[#4A6070]">
-              Análisis de{" "}
-              <span className="text-[#7A8FA6] break-all">{url}</span>
+              Análisis de <span className="text-[#7A8FA6] break-all">{url}</span>
             </p>
             <button
               onClick={reset}
@@ -358,15 +408,15 @@ export function AuditorTool() {
             </button>
           </div>
 
-          {/* 4 cards de categorías */}
+          {/* 4 cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <ScoreCard label="Velocidad"           score={results.speed} message={getMessage("speed", results.speed)} delay={0}    />
-            <ScoreCard label="SEO"                 score={results.seo}   message={getMessage("seo",   results.seo)}   delay={0.1}  />
-            <ScoreCard label="Mensaje"             score={results.copy}  message={getMessage("copy",  results.copy)}  delay={0.2}  />
-            <ScoreCard label="Llamadas a la acción" score={results.cta}   message={getMessage("cta",   results.cta)}   delay={0.3}  />
+            <ScoreCard label="Velocidad"            score={results.speed} message={getMessage("speed", results.speed, flags)} delay={0}   />
+            <ScoreCard label="SEO"                  score={results.seo}   message={getMessage("seo",   results.seo,   flags)} delay={0.1} />
+            <ScoreCard label="Mensaje"              score={results.copy}  message={getMessage("copy",  results.copy,  flags)} delay={0.2} />
+            <ScoreCard label="Llamadas a la acción" score={results.cta}   message={getMessage("cta",   results.cta,   flags)} delay={0.3} />
           </div>
 
-          {/* Puntaje general + impacto + CTA */}
+          {/* Panel de impacto con escenario */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -374,10 +424,23 @@ export function AuditorTool() {
             className="rounded-xl p-8 text-center"
             style={{ background: "linear-gradient(135deg, #0D1F4A 0%, #071a0e 60%, #080C14 100%)" }}
           >
+            {/* Escenario detectado */}
+            <div className="mb-6">
+              <p className="font-body text-[0.7rem] text-[#4A6070] uppercase tracking-[0.1em] mb-2">
+                Escenario detectado
+              </p>
+              <span
+                className="font-display font-bold text-lg tracking-wide"
+                style={{ color: SCENARIO_DATA[scenario].color }}
+              >
+                {SCENARIO_DATA[scenario].name}
+              </span>
+            </div>
+
+            {/* Puntaje general */}
             <p className="font-body text-[0.7rem] text-[#4A6070] uppercase tracking-[0.1em] mb-2">
               Puntaje general
             </p>
-
             <div className="flex items-baseline justify-center gap-2 mb-6">
               <span
                 className="font-mono font-medium leading-none"
@@ -388,8 +451,24 @@ export function AuditorTool() {
               <span className="font-mono text-2xl text-[#4A6070]">/100</span>
             </div>
 
-            <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-8">
-              {impactMessage(results.lossRange)}
+            {/* Mensaje del escenario */}
+            <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-3">
+              {getScenarioMessage(scenario, lossRange)}
+            </p>
+
+            {/* Pérdida estimada */}
+            {scenario !== "optimal" && (
+              <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
+                En un negocio con 500 visitas mensuales, eso son entre{" "}
+                <span className="text-white font-medium">{Math.round(500 * lossRange[0] / 100)}</span> y{" "}
+                <span className="text-white font-medium">{Math.round(500 * lossRange[1] / 100)}</span> clientes
+                potenciales que se van a la competencia cada mes.
+              </p>
+            )}
+
+            {/* Disclaimer científico */}
+            <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[460px] mx-auto mb-8 leading-relaxed">
+              Estimación basada en estudios de Google, Amazon, Nielsen Norman Group y Robert Cialdini aplicados a los indicadores de tu sitio.
             </p>
 
             <a
@@ -397,10 +476,7 @@ export function AuditorTool() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 font-body font-medium text-base text-white px-8 py-4 rounded-lg transition-all duration-200 hover:brightness-110 active:brightness-95 mb-4"
-              style={{
-                background: "linear-gradient(135deg, #2BA86A, #1a7a4e)",
-                boxShadow:  "0 0 28px rgba(43,168,106,0.4)",
-              }}
+              style={{ background: "linear-gradient(135deg, #2BA86A, #1a7a4e)", boxShadow: "0 0 28px rgba(43,168,106,0.4)" }}
             >
               Quiero recuperar esos clientes →
             </a>
