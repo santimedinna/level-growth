@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { FormFriction } from "@/app/api/audit/copy/route";
+import type { FormFriction, PageType } from "@/app/api/audit/copy/route";
 
 /* ─── Constantes ──────────────────────────── */
 const WA_URL =
@@ -16,7 +16,7 @@ const LOADING_MESSAGES = [
 ];
 
 /* ─── Tipos ───────────────────────────────── */
-type Step = "input" | "loading" | "results";
+type Step  = "input" | "loading" | "results";
 type Level = "red" | "yellow" | "green";
 
 type Scenario =
@@ -34,6 +34,7 @@ interface AuditResults {
   hasSocialProof:    boolean;
   hicksLawViolation: boolean;
   formFriction:      FormFriction;
+  pageType:          PageType;
 }
 
 /* ─── Semáforo ────────────────────────────── */
@@ -62,7 +63,7 @@ function overallColor(score: number) {
   return "#3FC87A";
 }
 
-/* ─── Mensajes por categoría ──────────────── */
+/* ─── Mensajes base por categoría ────────────────────────────────────── */
 type Category = "speed" | "seo" | "copy" | "cta";
 
 const BASE_MESSAGES: Record<Category, Record<Level, string>> = {
@@ -88,59 +89,107 @@ const BASE_MESSAGES: Record<Category, Record<Level, string>> = {
   },
 };
 
+/* ─── Flags para mensajes contextuales ───── */
 interface MsgFlags {
   hasSocialProof:    boolean;
   hicksLawViolation: boolean;
   formFriction:      FormFriction;
+  pageType:          PageType;
 }
 
+/* ─── Selector de mensaje por categoría ──── */
 function getMessage(cat: Category, score: number, flags: MsgFlags): string {
-  if (cat === "copy" && !flags.hasSocialProof) {
-    return "Tu web se siente sola. El cliente actual no te cree a vos, le cree a otros clientes. No mostrar testimonios o logos de marcas con las que trabajás es dejar dinero sobre la mesa.";
+  const { pageType, hasSocialProof, hicksLawViolation, formFriction } = flags;
+
+  /* ── Copy: mensajes según tipo de página ── */
+  if (cat === "copy") {
+    if (pageType === "institutional") {
+      return "Esta es una página institucional — hablar de la empresa es lo esperado. La oportunidad está en llevar al visitante hacia tus páginas de conversión con CTAs claros.";
+    }
+    if (pageType === "blog") {
+      return getLevel(score) === "green"
+        ? "Los titulares y descripciones de tus artículos están bien trabajados."
+        : "Los titulares de tus artículos definen si alguien hace clic o sigue scrolleando. Un buen título no describe el artículo — promete un resultado o revela un insight.";
+    }
+    if (!hasSocialProof && (pageType === "conversion" || pageType === "contact")) {
+      return "Tu web se siente sola. El cliente actual no te cree a vos, le cree a otros clientes. No mostrar testimonios o logos de marcas con las que trabajás es dejar dinero sobre la mesa.";
+    }
   }
+
+  /* ── CTA: mensajes según tipo de página ── */
   if (cat === "cta") {
-    if (flags.formFriction === "missing") {
+    if (pageType === "institutional" && score < 4) {
+      return "Tu página institucional no lleva al visitante a dar el siguiente paso. Cada página debe tener un camino claro hacia la conversión.";
+    }
+    if (pageType === "contact") {
+      if (score <= 7) {
+        return "Ofrecé WhatsApp como alternativa al formulario. Los usuarios prefieren contactar por donde ya están — el formulario solo no es suficiente.";
+      }
+      if (score > 7) {
+        return "Bien: tenés formulario y WhatsApp. Asegurate de que la primera respuesta llegue en menos de 5 minutos — ahí se gana o se pierde el cliente.";
+      }
+    }
+    if (pageType === "blog") {
+      return score >= 7
+        ? "Tus artículos tienen CTAs. Seguí midiendo cuáles generan más consultas para optimizar el copy de cada uno."
+        : "Los artículos de blog son una oportunidad de captura. Asegurate de que cada post tenga un CTA claro al final que lleve al visitante a dar el siguiente paso.";
+    }
+    /* Conversión: mensajes contextuales existentes */
+    if (formFriction === "missing") {
       return "Tu sitio no tiene una forma clara de contacto. El cliente que quiere comprarte no sabe cómo hacerlo.";
     }
-    if (flags.formFriction === "too_many_fields") {
+    if (formFriction === "too_many_fields") {
       return "Estás pidiendo demasiado antes de dar algo. Tu formulario es una barrera, no un puente. Reducir los campos multiplica las consultas de inmediato.";
     }
-    if (flags.hicksLawViolation) {
+    if (hicksLawViolation) {
       return "Tu hero tiene demasiadas opciones compitiendo. Al darle tantas decisiones al visitante en el primer vistazo, terminan sin elegir ninguna. Una sola acción dominante puede aumentar tus conversiones hasta un 20%.";
     }
   }
+
   return BASE_MESSAGES[cat][getLevel(score)];
 }
 
 /* ─── Escenario combinado ─────────────────── */
-/* Usa los scores (1-10) — umbral >= 7 para "bueno" */
-function getScenario(speedScore: number, copyScore: number): Scenario {
+function getScenarioInfo(speedScore: number, copyScore: number): {
+  scenario:       Scenario;
+  isIntermediate: boolean;
+} {
   const speedOk = speedScore >= 7;
-  const copyOk  = copyScore  >= 7;
-  if (speedOk && copyOk)   return "optimal";
-  if (speedOk && !copyOk)  return "puerta-giratoria";
-  if (!speedOk && copyOk)  return "cuello-de-botella";
-  return "abismo";
+
+  if (speedOk && copyScore >= 7) return { scenario: "optimal",           isIntermediate: false };
+  if (speedOk)                   return { scenario: "puerta-giratoria",  isIntermediate: false };
+  if (copyScore >= 7)            return { scenario: "cuello-de-botella", isIntermediate: false };
+  if (copyScore >= 5)            return { scenario: "cuello-de-botella", isIntermediate: true  }; // zona intermedia
+  return                                { scenario: "abismo",            isIntermediate: false };
 }
 
-function getLossRange(scenario: Scenario): [number, number] {
+function getLossRange(scenario: Scenario, isIntermediate = false): [number, number] {
   switch (scenario) {
     case "optimal":           return [0,  10];
     case "puerta-giratoria":  return [40, 60];
-    case "cuello-de-botella": return [65, 80];
+    case "cuello-de-botella": return isIntermediate ? [35, 55] : [65, 80];
     case "abismo":            return [90, 95];
   }
 }
 
 const SCENARIO_DATA: Record<Scenario, { name: string; color: string }> = {
-  "optimal":           { name: "Buen estado general",    color: "#3FC87A" },
-  "puerta-giratoria":  { name: "La Puerta Giratoria",    color: "#F59E0B" },
-  "cuello-de-botella": { name: "El Cuello de Botella",   color: "#F97316" },
-  "abismo":            { name: "El Abismo",              color: "#EF4444" },
+  "optimal":           { name: "Buen estado general",  color: "#3FC87A" },
+  "puerta-giratoria":  { name: "La Puerta Giratoria",  color: "#F59E0B" },
+  "cuello-de-botella": { name: "El Cuello de Botella", color: "#F97316" },
+  "abismo":            { name: "El Abismo",            color: "#EF4444" },
 };
 
-function getScenarioMessage(scenario: Scenario, lossRange: [number, number]): string {
+function getScenarioMessage(
+  scenario:       Scenario,
+  lossRange:      [number, number],
+  isIntermediate: boolean,
+): string {
   const [min] = lossRange;
+
+  if (scenario === "cuello-de-botella" && isIntermediate) {
+    return "Tu sitio pierde visitantes por velocidad antes de que puedan leer tu propuesta. Con mejoras técnicas podés recuperar una parte importante de ese tráfico.";
+  }
+
   switch (scenario) {
     case "optimal":
       return "Tu sitio tiene buenas bases. Sin embargo, siempre hay oportunidades de mejora que marcan la diferencia entre una web que existe y una que vende activamente.";
@@ -213,16 +262,22 @@ function ScoreCard({
 
 /* ─── Componente principal ────────────────── */
 export function AuditorTool() {
-  const [step,    setStep]    = useState<Step>("input");
-  const [url,     setUrl]     = useState("");
-  const [error,   setError]   = useState("");
-  const [msgIdx,  setMsgIdx]  = useState(0);
-  const [progress,setProgress]= useState(0);
-  const [results, setResults] = useState<AuditResults | null>(null);
+  const [step,     setStep]     = useState<Step>("input");
+  const [url,      setUrl]      = useState("");
+  const [error,    setError]    = useState("");
+  const [msgIdx,   setMsgIdx]   = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [results,  setResults]  = useState<AuditResults | null>(null);
 
-  const scenario   = results ? getScenario(results.speed, results.copy) : "optimal";
-  const lossRange  = results ? getLossRange(scenario) : [0, 10] as [number, number];
-  const overall    = results
+  const { scenario, isIntermediate } = results
+    ? getScenarioInfo(results.speed, results.copy)
+    : { scenario: "optimal" as Scenario, isIntermediate: false };
+
+  const lossRange = results
+    ? getLossRange(scenario, isIntermediate)
+    : [0, 10] as [number, number];
+
+  const overall = results
     ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
     : 0;
 
@@ -282,6 +337,7 @@ export function AuditorTool() {
         hasSocialProof:    copy.hasSocialProof    ?? false,
         hicksLawViolation: copy.hicksLawViolation ?? false,
         formFriction:      copy.formFriction      ?? "none",
+        pageType:          copy.pageType          ?? "conversion",
       });
 
       setProgress(1);
@@ -301,8 +357,13 @@ export function AuditorTool() {
   }
 
   const flags: MsgFlags = results
-    ? { hasSocialProof: results.hasSocialProof, hicksLawViolation: results.hicksLawViolation, formFriction: results.formFriction }
-    : { hasSocialProof: true, hicksLawViolation: false, formFriction: "none" };
+    ? {
+        hasSocialProof:    results.hasSocialProof,
+        hicksLawViolation: results.hicksLawViolation,
+        formFriction:      results.formFriction,
+        pageType:          results.pageType,
+      }
+    : { hasSocialProof: true, hicksLawViolation: false, formFriction: "none", pageType: "conversion" };
 
   return (
     <AnimatePresence mode="wait">
@@ -396,11 +457,19 @@ export function AuditorTool() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
-          {/* URL analizada + resetear */}
+          {/* URL analizada + tipo detectado + resetear */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-            <p className="font-body text-sm text-[#4A6070]">
-              Análisis de <span className="text-[#7A8FA6] break-all">{url}</span>
-            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <p className="font-body text-sm text-[#4A6070]">
+                Análisis de <span className="text-[#7A8FA6] break-all">{url}</span>
+              </p>
+              <span className="font-body text-[0.6rem] uppercase tracking-[0.08em] px-2 py-0.5 rounded border border-white/[0.08] text-[#4A6070]">
+                {results.pageType === "conversion"    && "Pág. de conversión"}
+                {results.pageType === "institutional" && "Pág. institucional"}
+                {results.pageType === "blog"          && "Blog / listado"}
+                {results.pageType === "contact"       && "Pág. de contacto"}
+              </span>
+            </div>
             <button
               onClick={reset}
               className="font-body text-xs text-[#3FC87A] hover:text-white transition-colors duration-200"
@@ -460,7 +529,7 @@ export function AuditorTool() {
 
             {/* Mensaje del escenario */}
             <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-3">
-              {getScenarioMessage(scenario, lossRange)}
+              {getScenarioMessage(scenario, lossRange, isIntermediate)}
             </p>
 
             {/* Pérdida estimada */}
@@ -473,7 +542,7 @@ export function AuditorTool() {
               </p>
             )}
 
-            {/* Disclaimer científico */}
+            {/* Disclaimer */}
             <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[460px] mx-auto mb-8 leading-relaxed">
               Estimación basada en estudios de Google, Amazon, Nielsen Norman Group y Robert Cialdini aplicados a los indicadores de tu sitio.
             </p>
