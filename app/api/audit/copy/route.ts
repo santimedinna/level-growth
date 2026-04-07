@@ -97,23 +97,42 @@ function analyze(html: string): CopyResult {
   if (!hasSocialProof) copyScore = Math.max(1, copyScore - 2);
   copyScore = clamp(copyScore, 1, 10);
 
-  /* ── CTA base ─────────────────────────────── */
-  let ctaCount = 0;
+  /* ── Contacto y CTAs ─────────────────────── */
+  const forms     = $("form");
+  const hasWaLink = $("a[href*='wa.me'], a[href*='whatsapp']").length > 0
+                 || bodyLower.includes("wa.me")
+                 || bodyLower.includes("whatsapp");
+
+  const inputCount   = forms.length > 0
+    ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
+    : 0;
+  const hasLightForm = forms.length > 0 && inputCount <= 5;
+  const hasContact   = hasWaLink || hasLightForm;
+
+  /* Contar botones/links con palabras de acción */
+  let actionBtnCount = 0;
   $("button, a").each((_, el) => {
     const text = $(el).text().toLowerCase().trim();
-    if (ACTION_WORDS.some((w) => text.includes(w))) ctaCount++;
+    if (ACTION_WORDS.some((w) => text.includes(w))) actionBtnCount++;
   });
 
+  /* ── Score de CTA calibrado ───────────────── */
   let ctaScore: number;
-  if (ctaCount === 0)      ctaScore = 1;
-  else if (ctaCount === 1) ctaScore = 3;
-  else if (ctaCount <= 4)  ctaScore = 7;
-  else                     ctaScore = 9;
-  if (ctaCount < 2) ctaScore = Math.min(ctaScore, 4);
+
+  if (!hasContact) {
+    /* Sin ninguna forma de contacto detectable */
+    ctaScore = 1;
+  } else {
+    /* Base: tiene WhatsApp o formulario razonable */
+    ctaScore = 6;
+    /* Bonus: además tiene 2+ botones de acción */
+    if (actionBtnCount >= 2) ctaScore = 8;
+    /* Penalización: formulario con demasiados campos */
+    if (forms.length > 0 && inputCount > 5) ctaScore = Math.max(1, ctaScore - 2);
+  }
 
   /* ── Ley de Hick: above the fold ─────────── */
-  /* Aproximar "above the fold" como los primeros 3 hijos directos del body */
-  const aboveFoldEls = $("body").children().slice(0, 3);
+  const aboveFoldEls  = $("body").children().slice(0, 3);
   const uniqueCtaTexts = new Set<string>();
   aboveFoldEls.find("button, a").each((_, el) => {
     const text = $(el).text().toLowerCase().trim();
@@ -124,29 +143,11 @@ function analyze(html: string): CopyResult {
   const hicksLawViolation = uniqueCtaTexts.size >= 4;
   if (hicksLawViolation) ctaScore = Math.max(1, ctaScore - 2);
 
-  /* ── Fricción de formulario ───────────────── */
-  const forms      = $("form");
-  const hasWaLink  = $("a[href*='wa.me'], a[href*='whatsapp']").length > 0
-                  || bodyLower.includes("wa.me")
-                  || bodyLower.includes("whatsapp");
-
+  /* ── Tipo de fricción de formulario ─────────── */
   let formFriction: FormFriction = "none";
-
-  if (forms.length === 0) {
-    if (!hasWaLink) {
-      formFriction = "missing";
-      ctaScore     = Math.max(1, ctaScore - 2);
-    }
-  } else {
-    const inputCount = forms.first().find("input:not([type='hidden']):not([type='submit'])").length;
-    if (inputCount > 5) {
-      formFriction = "too_many_fields";
-      ctaScore     = Math.max(1, ctaScore - 2);
-    } else if (inputCount <= 3) {
-      formFriction = "optimal";
-      ctaScore     = Math.min(10, ctaScore + 1);
-    }
-  }
+  if (!hasContact)                          formFriction = "missing";
+  else if (forms.length > 0 && inputCount > 5) formFriction = "too_many_fields";
+  else if (forms.length > 0 && inputCount <= 3) formFriction = "optimal";
 
   ctaScore = clamp(ctaScore, 1, 10);
 

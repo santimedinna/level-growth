@@ -113,9 +113,10 @@ function getMessage(cat: Category, score: number, flags: MsgFlags): string {
 }
 
 /* ─── Escenario combinado ─────────────────── */
-function getScenario(lcpMs: number, copyScore: number): Scenario {
-  const speedOk = lcpMs < 2500;
-  const copyOk  = copyScore > 6;
+/* Usa los scores (1-10) — umbral >= 7 para "bueno" */
+function getScenario(speedScore: number, copyScore: number): Scenario {
+  const speedOk = speedScore >= 7;
+  const copyOk  = copyScore  >= 7;
   if (speedOk && copyOk)   return "optimal";
   if (speedOk && !copyOk)  return "puerta-giratoria";
   if (!speedOk && copyOk)  return "cuello-de-botella";
@@ -219,7 +220,7 @@ export function AuditorTool() {
   const [progress,setProgress]= useState(0);
   const [results, setResults] = useState<AuditResults | null>(null);
 
-  const scenario   = results ? getScenario(results.lcpMs, results.copy) : "optimal";
+  const scenario   = results ? getScenario(results.speed, results.copy) : "optimal";
   const lossRange  = results ? getLossRange(scenario) : [0, 10] as [number, number];
   const overall    = results
     ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
@@ -424,24 +425,11 @@ export function AuditorTool() {
             className="rounded-xl p-8 text-center"
             style={{ background: "linear-gradient(135deg, #0D1F4A 0%, #071a0e 60%, #080C14 100%)" }}
           >
-            {/* Escenario detectado */}
-            <div className="mb-6">
-              <p className="font-body text-[0.7rem] text-[#4A6070] uppercase tracking-[0.1em] mb-2">
-                Escenario detectado
-              </p>
-              <span
-                className="font-display font-bold text-lg tracking-wide"
-                style={{ color: SCENARIO_DATA[scenario].color }}
-              >
-                {SCENARIO_DATA[scenario].name}
-              </span>
-            </div>
-
             {/* Puntaje general */}
             <p className="font-body text-[0.7rem] text-[#4A6070] uppercase tracking-[0.1em] mb-2">
               Puntaje general
             </p>
-            <div className="flex items-baseline justify-center gap-2 mb-6">
+            <div className="flex items-baseline justify-center gap-2 mb-5">
               <span
                 className="font-mono font-medium leading-none"
                 style={{ fontSize: "clamp(3.5rem, 8vw, 5rem)", color: overallColor(overall) }}
@@ -449,6 +437,25 @@ export function AuditorTool() {
                 <CountUp target={overall} duration={1500} />
               </span>
               <span className="font-mono text-2xl text-[#4A6070]">/100</span>
+            </div>
+
+            {/* Escenario detectado — prominente */}
+            <div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 border"
+              style={{
+                borderColor:     `${SCENARIO_DATA[scenario].color}40`,
+                backgroundColor: `${SCENARIO_DATA[scenario].color}12`,
+              }}
+            >
+              <span className="font-body text-[0.7rem] text-[#7A8FA6] uppercase tracking-[0.08em]">
+                Escenario detectado:
+              </span>
+              <span
+                className="font-display font-bold text-base tracking-wide"
+                style={{ color: SCENARIO_DATA[scenario].color }}
+              >
+                {SCENARIO_DATA[scenario].name}
+              </span>
             </div>
 
             {/* Mensaje del escenario */}
