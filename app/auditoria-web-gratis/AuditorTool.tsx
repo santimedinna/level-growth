@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { FormFriction, PageType, BusinessType } from "@/app/api/audit/copy/route";
+import type { FormFriction, PageType, BusinessType, PageTypeScores } from "@/app/api/audit/copy/route";
 
 /* ─── Constantes ──────────────────────────── */
 const WA_URL =
@@ -40,6 +40,11 @@ interface AuditResults {
   hasGenericH1:       boolean;
   hasFeatureBias:     boolean;
   hasUnsubstantiated: boolean;
+  _debug?: {
+    pageTypeScores: PageTypeScores;
+    copyPenalties:  number;
+    seoElements:    { hasTitle: boolean; hasMetaDesc: boolean; h1Count: number; altCoverage: number };
+  };
 }
 
 /* ─── Semáforo ────────────────────────────── */
@@ -370,6 +375,7 @@ export function AuditorTool() {
         hasGenericH1:       copy.hasGenericH1      ?? false,
         hasFeatureBias:     copy.hasFeatureBias    ?? false,
         hasUnsubstantiated: copy.hasUnsubstantiated ?? false,
+        _debug:             copy._debug,
       });
 
       setProgress(1);
@@ -598,6 +604,39 @@ export function AuditorTool() {
               Un especialista analiza tu caso en menos de 24hs. Sin costo.
             </p>
           </motion.div>
+
+          {/* Panel de debug — solo visible en desarrollo */}
+          {process.env.NODE_ENV !== "production" && results._debug && (
+            <div className="mt-4 p-4 rounded-xl border border-white/[0.08] bg-black/40 font-mono text-[0.65rem] text-[#4A6070] space-y-1">
+              <p className="text-[#3FC87A] mb-2 font-medium">⚙ DEBUG (solo en desarrollo)</p>
+              <p>
+                <span className="text-[#7A8FA6]">Tipo detectado:</span>{" "}
+                <span className="text-white">{results.pageType}</span>
+                {" · "}conv={results._debug.pageTypeScores.conversion}{" "}
+                inst={results._debug.pageTypeScores.institutional}{" "}
+                blog={results._debug.pageTypeScores.blog}{" "}
+                ctc={results._debug.pageTypeScores.contact}
+              </p>
+              <p>
+                <span className="text-[#7A8FA6]">Copy:</span>{" "}
+                base=8 penalizaciones=-{results._debug.copyPenalties} → score={results.copy}
+              </p>
+              <p>
+                <span className="text-[#7A8FA6]">SEO elements:</span>{" "}
+                title={results._debug.seoElements.hasTitle ? "✓" : "✗"}{" "}
+                meta={results._debug.seoElements.hasMetaDesc ? "✓" : "✗"}{" "}
+                h1={results._debug.seoElements.h1Count}{" "}
+                alts={Math.round(results._debug.seoElements.altCoverage * 100)}%{" "}
+                → score={results.seo}
+              </p>
+              <p>
+                <span className="text-[#7A8FA6]">Negocio:</span> {results.businessType}{" · "}
+                <span className="text-[#7A8FA6]">Social proof:</span> {results.hasSocialProof ? "✓" : "✗"}{" · "}
+                <span className="text-[#7A8FA6]">H1 genérico:</span> {results.hasGenericH1 ? "✓" : "✗"}{" · "}
+                <span className="text-[#7A8FA6]">Feature bias:</span> {results.hasFeatureBias ? "✓" : "✗"}
+              </p>
+            </div>
+          )}
         </motion.div>
       )}
 

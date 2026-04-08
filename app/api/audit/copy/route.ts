@@ -6,6 +6,13 @@ export type FormFriction = "none" | "missing" | "too_many_fields" | "optimal";
 export type PageType     = "conversion" | "institutional" | "blog" | "contact";
 export type BusinessType = "b2b" | "ecommerce" | "services" | "general";
 
+export interface PageTypeScores {
+  conversion:    number;
+  institutional: number;
+  blog:          number;
+  contact:       number;
+}
+
 export interface CopyResult {
   seoScore:           number;
   copyScore:          number;
@@ -18,6 +25,12 @@ export interface CopyResult {
   hasGenericH1:       boolean;   /* H1/H2 genérico sin propuesta de valor */
   hasFeatureBias:     boolean;   /* Describe features, no beneficios */
   hasUnsubstantiated: boolean;   /* Claims fuertes sin evidencia */
+  /* Solo en desarrollo — omitido en producción */
+  _debug?: {
+    pageTypeScores: PageTypeScores;
+    copyPenalties:  number;
+    seoElements:    { hasTitle: boolean; hasMetaDesc: boolean; h1Count: number; altCoverage: number };
+  };
 }
 
 interface CacheEntry {
@@ -134,7 +147,7 @@ function detectPageType(
   bodyLower:   string,
   url:         string,
   allCtaCount: number,
-): PageType {
+): { type: PageType; scores: PageTypeScores } {
   let convPts = 0, instPts = 0, blogPts = 0, ctcPts = 0;
 
   const h1Text      = $("h1").first().text().toLowerCase().trim();
@@ -174,6 +187,8 @@ function detectPageType(
   if ($("section, main > div, article").length < 3)              ctcPts++;
 
   /* ── Clasificar ───────────────────────── */
+  const scores: PageTypeScores = { conversion: convPts, institutional: instPts, blog: blogPts, contact: ctcPts };
+
   const sorted = [
     { type: "conversion"    as PageType, pts: convPts },
     { type: "institutional" as PageType, pts: instPts },
@@ -181,9 +196,9 @@ function detectPageType(
     { type: "contact"       as PageType, pts: ctcPts  },
   ].sort((a, b) => b.pts - a.pts);
 
-  if (sorted[0].pts === sorted[1].pts)                          return "conversion";
-  if (sorted[0].type !== "conversion" && sorted[0].pts < 2)    return "conversion";
-  return sorted[0].type;
+  if (sorted[0].pts === sorted[1].pts)                       return { type: "conversion", scores };
+  if (sorted[0].type !== "conversion" && sorted[0].pts < 2) return { type: "conversion", scores };
+  return { type: sorted[0].type, scores };
 }
 
 /* ─── Análisis completo ──────────────────────────────────────────────── */
@@ -220,12 +235,14 @@ function analyze(html: string, url: string): CopyResult {
   const hasContact = hasWaLink || (forms.length > 0 && inputCount <= 5);
 
   /* ── 3. Tipo de página y de negocio ──────────────────────────────── */
-  const pageType     = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
+  const { type: pageType, scores: pageTypeScores } = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
   const businessType = detectBusinessType(bodyLower);
 
   /* ── 4. SEO score (técnico puro) ─────────────────────────────────── */
-  const hasTitle    = $("title").text().trim().length > 10;
-  const hasMetaDesc = ($('meta[name="description"]').attr("content") ?? "").trim().length > 50;
+  const titleText   = $("title").text().trim();
+  const hasTitle    = titleText.length > 10;
+  const metaContent = ($('meta[name="description"]').attr("content") ?? "").trim();
+  const hasMetaDesc = metaContent.length > 50;
   const h1Count     = $("h1").length;
 
   const imgs        = $("img").toArray();
@@ -236,7 +253,7 @@ function analyze(html: string, url: string): CopyResult {
   if (hasTitle)          seoScore += 2;
   if (hasMetaDesc)       seoScore += 2;
   if (h1Count === 1)     seoScore += 3; // exactamente uno
-  if (h1Count <= 1)      seoScore += 1; // sin duplicado
+  if (h1Count <= 1)      seoScore += 1; // sin duplicado (0 o 1)
   if (altCoverage > 0.8) seoScore += 2;
 
   /* Cap si falta H1, meta description o alt texts */
@@ -244,6 +261,9 @@ function analyze(html: string, url: string): CopyResult {
     seoScore = Math.min(seoScore, 6);
   }
   seoScore = clamp(seoScore, 1, 10);
+
+  /* Log de debug para SEO */
+  console.log(`[audit/copy] SEO — title(${hasTitle}): "${titleText.slice(0, 50)}" | meta(${hasMetaDesc}): "${metaContent.slice(0, 50)}" | h1=${h1Count} | imgs=${imgs.length} alt=${imgWithAlt}(${Math.round(altCoverage * 100)}%) | score=${seoScore}`);
 
   /* ── 5. Social proof ─────────────────────────────────────────────── */
   const hasSocialProofText = SOCIAL_PROOF_WORDS.some((w) => bodyLower.includes(w));
@@ -270,57 +290,50 @@ function analyze(html: string, url: string): CopyResult {
 
   /* ── 7. Copy score ───────────────────────────────────────────────── */
   let copyScore: number;
+  let copyPenalties = 0;
 
   if (pageType === "blog") {
     /* Blog: solo claridad de titular y meta */
-    const h1Clean  = $("h1").first().text().trim();
+    const h1Clean   = $("h1").first().text().trim();
     const metaClean = ($('meta[name="description"]').attr("content") ?? "").trim();
     copyScore = (h1Clean.length > 5 && metaClean.length > 10) ? 6 : 4;
 
   } else {
-    /* Ratio base ego/cliente */
-    const egoCount = countOccurrences(bodyText, EGO_WORDS);
-    const clientCnt = countOccurrences(bodyText, CLIENT_WORDS);
-    const total     = egoCount + clientCnt;
+    /* Base = 8. Se ajusta solo hacia abajo con penalizaciones acumuladas (cap -5) */
 
-    if (total === 0) {
-      copyScore = 5;
-    } else {
-      const ratio = clientCnt / total;
-      copyScore   = Math.max(1, Math.round(ratio * 9) + 1);
-    }
-
-    /* Penalización: H1 genérico (conversion y contact) */
+    /* Penalización: H1 genérico → -2 (antes era ceiling en 5) */
     if (hasGenericH1 && (pageType === "conversion" || pageType === "contact")) {
-      copyScore = Math.min(copyScore, 5);
+      copyPenalties += 2;
     }
 
     /* Penalización: features > beneficios (solo conversion) */
     if (hasFeatureBias && pageType === "conversion") {
-      copyScore -= 1;
+      copyPenalties += 1;
     }
 
     /* Penalización: claims sin evidencia (solo conversion) */
     if (hasUnsubstantiated && pageType === "conversion") {
-      copyScore -= 1;
+      copyPenalties += 1;
     }
 
-    /* Penalización: ratio ego alto (solo conversion) */
-    const egoC  = countOccurrences(bodyText, EGO_WORDS);
-    const cliC  = countOccurrences(bodyText, CLIENT_WORDS);
-    if (pageType === "conversion" && cliC > 0 && egoC > cliC * 2) {
-      copyScore -= 1;
+    /* Penalización: ratio ego/cliente alto (solo conversion) */
+    const egoCount = countOccurrences(bodyText, EGO_WORDS);
+    const clientCnt = countOccurrences(bodyText, CLIENT_WORDS);
+    if (pageType === "conversion" && clientCnt > 0 && egoCount > clientCnt * 2) {
+      copyPenalties += 1;
     }
 
-    /* Penalización: falta de prueba social (solo conversion, por tipo de negocio) */
+    /* Penalización: falta de prueba social (solo conversion, según tipo de negocio) */
     if (pageType === "conversion" && !hasSocialProof) {
-      switch (businessType) {
-        case "ecommerce": copyScore -= 2; break;
-        case "services":  copyScore -= 2; break;
-        case "b2b":       copyScore -= 1; break;
-        default:          copyScore -= 1; break;
-      }
+      copyPenalties += (businessType === "ecommerce" || businessType === "services") ? 2 : 1;
     }
+
+    /* Cap de penalizaciones: máximo -5 puntos */
+    copyPenalties = Math.min(copyPenalties, 5);
+
+    /* Floor en 3 si hay algo de contenido, 1 si la página está vacía */
+    const isEmptyPage = bodyText.trim().length < 200;
+    copyScore = Math.max(isEmptyPage ? 1 : 3, 8 - copyPenalties);
   }
 
   copyScore = clamp(copyScore, 1, 10);
@@ -386,12 +399,23 @@ function analyze(html: string, url: string): CopyResult {
     formFriction = "optimal";
   }
 
-  return {
+  const result: CopyResult = {
     seoScore, copyScore, ctaScore,
     hasSocialProof, hicksLawViolation, formFriction,
     pageType, businessType,
     hasGenericH1, hasFeatureBias, hasUnsubstantiated,
   };
+
+  /* Debug info — solo se adjunta fuera de producción */
+  if (process.env.NODE_ENV !== "production") {
+    result._debug = {
+      pageTypeScores,
+      copyPenalties,
+      seoElements: { hasTitle, hasMetaDesc, h1Count, altCoverage },
+    };
+  }
+
+  return result;
 }
 
 /* ─── Handler ────────────────────────────────────────────────────────── */
