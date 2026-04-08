@@ -27,11 +27,11 @@ type Scenario =
   | "abismo";
 
 interface AuditResults {
-  speed:              number;
+  speed:              number | null;  /* null si PageSpeed y TTFB fallaron */
   seo:                number;
   copy:               number;
   cta:                number;
-  lcpMs:              number;
+  lcpMs:              number | null;
   hasSocialProof:     boolean;
   hicksLawViolation:  boolean;
   formFriction:       FormFriction;
@@ -191,12 +191,14 @@ function getMessage(cat: Category, score: number, flags: MsgFlags): string {
 }
 
 /* ─── Escenario combinado (5 categorías) ──── */
-function getScenario(speedScore: number, copyScore: number): Scenario {
-  if (speedScore >= 7 && copyScore >= 7) return "maquina";
-  if (speedScore >= 7)                   return "puerta-giratoria";   // copy < 7
-  if (copyScore >= 7)                    return "cuello-de-botella";  // speed < 7
-  if (copyScore >= 5)                    return "doble-friccion";     // speed < 7, copy 5-6
-  return                                        "abismo";             // speed < 7, copy < 5
+function getScenario(speedScore: number | null, copyScore: number): Scenario {
+  /* Si no pudimos medir velocidad, usamos 5 (neutral) para no sesgar el escenario */
+  const speed = speedScore ?? 5;
+  if (speed >= 7 && copyScore >= 7) return "maquina";
+  if (speed >= 7)                   return "puerta-giratoria";   // copy < 7
+  if (copyScore >= 7)               return "cuello-de-botella";  // speed < 7
+  if (copyScore >= 5)               return "doble-friccion";     // speed < 7, copy 5-6
+  return                                   "abismo";             // speed < 7, copy < 5
 }
 
 function getLossRange(scenario: Scenario): [number, number] {
@@ -310,8 +312,11 @@ export function AuditorTool() {
 
   const scenario  = results ? getScenario(results.speed, results.copy) : "maquina";
   const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
+  /* Si speed es null, el puntaje general se calcula solo con las 3 métricas conocidas */
   const overall   = results
-    ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
+    ? results.speed !== null
+      ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
+      : Math.round(((results.seo + results.copy + results.cta) / 30) * 100)
     : 0;
 
   /* Rotar mensajes de carga */
@@ -362,11 +367,11 @@ export function AuditorTool() {
       const copy = await copyRes.json();
 
       setResults({
-        speed:              ps.speedScore          ?? 5,
+        speed:              ps.speedScore          ?? null,
         seo:                copy.seoScore          ?? 4,
         copy:               copy.copyScore         ?? 4,
         cta:                copy.ctaScore          ?? 4,
-        lcpMs:              ps.lcpMs               ?? 3000,
+        lcpMs:              ps.lcpMs               ?? null,
         hasSocialProof:     copy.hasSocialProof    ?? false,
         hicksLawViolation:  copy.hicksLawViolation ?? false,
         formFriction:       copy.formFriction      ?? "none",
@@ -523,7 +528,23 @@ export function AuditorTool() {
 
           {/* 4 score cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <ScoreCard label="Velocidad"            score={results.speed} message={getMessage("speed", results.speed, flags)} delay={0}   />
+            {results.speed !== null ? (
+              <ScoreCard label="Velocidad" score={results.speed} message={getMessage("speed", results.speed, flags)} delay={0} />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0 }}
+                className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] rounded-xl p-6"
+              >
+                <p className="font-body text-[0.7rem] text-[#4A6070] uppercase tracking-[0.1em] mb-3">Velocidad</p>
+                <p className="font-mono text-sm text-[#4A6070] mb-3">— / 10</p>
+                <p className="font-body text-sm text-[#7A8FA6] leading-[1.65]">
+                  No pudimos analizar la velocidad de este sitio. Puede deberse a restricciones de acceso del servidor o bloqueos de red. Podés medirla manualmente en{" "}
+                  <span className="text-[#3FC87A]">pagespeed.web.dev</span>.
+                </p>
+              </motion.div>
+            )}
             <ScoreCard label="SEO"                  score={results.seo}   message={getMessage("seo",   results.seo,   flags)} delay={0.1} />
             <ScoreCard label="Mensaje"              score={results.copy}  message={getMessage("copy",  results.copy,  flags)} delay={0.2} />
             <ScoreCard label="Llamadas a la acción" score={results.cta}   message={getMessage("cta",   results.cta,   flags)} delay={0.3} />

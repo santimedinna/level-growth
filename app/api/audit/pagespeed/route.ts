@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 /* ─── Tipos ───────────────────────────────── */
 export interface PageSpeedResult {
-  speedScore: number;
-  lcpMs:      number;   /* LCP real o proxy TTFB — usado para fórmula de escenario */
+  speedScore: number | null;  /* null si ambos métodos fallaron */
+  lcpMs:      number | null;
   source:     "pagespeed" | "ttfb" | "fallback";
 }
 
@@ -114,6 +114,6 @@ export async function GET(request: Request) {
   }
 
   /* ── Fallback final: no bloquear al usuario ─ */
-  const fallback: PageSpeedResult = { speedScore: 5, lcpMs: 3000, source: "fallback" };
+  const fallback: PageSpeedResult = { speedScore: null, lcpMs: null, source: "fallback" };
   return NextResponse.json(fallback);
 }

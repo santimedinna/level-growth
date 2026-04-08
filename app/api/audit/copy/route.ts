@@ -84,9 +84,12 @@ const STRONG_CTA_WORDS = [
   "get started", "sign up", "try free", "start now", "contact us",
   "get a quote", "book a demo", "book demo", "schedule", "request",
   "subscribe", "get access", "claim",
-  /* SaaS */
+  /* SaaS — captura "Try Notion free", "Try it free", "Start for free", etc. */
   "free trial", "start trial", "start free", "try for free",
+  "start for free", "get started free",
   "join", "demo", "free demo",
+  " for free",  /* trailing match: "try notion for free", "use it for free" */
+  "try ",       /* leading match: "try notion", "try it" */
 ];
 const WEAK_CTA_WORDS = [
   /* ES */
@@ -261,17 +264,26 @@ function analyze(html: string, url: string): CopyResult {
   let weakCtaCount   = 0;
   const allCtaTexts  = new Set<string>();
 
+  const ctaDebugStrong: string[] = [];
+  const ctaDebugWeak:   string[] = [];
+
   $("button, a").each((_, el) => {
     const text = $(el).text().toLowerCase().trim();
     if (!text || text.length < 2) return;
     if (STRONG_CTA_WORDS.some((w) => text.includes(w))) {
       strongCtaCount++;
       allCtaTexts.add(text);
+      ctaDebugStrong.push(text.slice(0, 60));
     } else if (WEAK_CTA_WORDS.some((w) => text.includes(w))) {
       weakCtaCount++;
       allCtaTexts.add(text);
+      ctaDebugWeak.push(text.slice(0, 60));
     }
   });
+
+  console.log(`[audit/copy][CTA] ${url.slice(0, 70)}`);
+  console.log(`  fuertes (${strongCtaCount}): ${JSON.stringify(ctaDebugStrong.slice(0, 10))}`);
+  console.log(`  débiles (${weakCtaCount}):  ${JSON.stringify(ctaDebugWeak.slice(0, 10))}`);
 
   /* ── 2. Contacto disponible ──────────────────────────────────────── */
   const forms     = $("form");
