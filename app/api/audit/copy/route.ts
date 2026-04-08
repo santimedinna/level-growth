@@ -45,29 +45,55 @@ const TTL   = 24 * 60 * 60 * 1000;
 /* ─── Vocabulario ────────────────────────────────────────────────────── */
 
 /* Señales de conversión */
-const SERVICE_WORDS  = ["servicio", "solución", "solucion", "producto", "ofrecemos", "instalación", "instalacion", "asesoría", "asesoria", "precio", "plan"];
-const RESULT_VERBS   = ["aumentá", "aumenta", "reducí", "reduce", "ahorrá", "ahorra", "optimizá", "optimiza", "mejorá", "mejora", "lográ", "logra"];
-const STATS_PATTERN  = /\d+\s*%|\d+\s*(clientes|años|anos|proyectos|casos|eventos|empresas)/i;
+const SERVICE_WORDS  = [
+  "servicio", "solución", "solucion", "producto", "ofrecemos", "instalación", "instalacion", "asesoría", "asesoria", "precio", "plan",
+  "service", "solution", "product", "offer", "pricing",
+];
+const RESULT_VERBS   = [
+  "aumentá", "aumenta", "reducí", "reduce", "ahorrá", "ahorra", "optimizá", "optimiza", "mejorá", "mejora", "lográ", "logra",
+  "increase", "decrease", "save", "grow", "scale", "boost",
+];
+const STATS_PATTERN  = /\d+\s*%|\d+\s*(clientes|años|anos|proyectos|casos|eventos|empresas|customers|years|projects|clients|cases|companies)/i;
 
 /* Blog */
-const BLOG_WORDS     = ["publicado", "artículo", "articulo", "leer más", "leer mas", "minutos de lectura"];
-const DATE_PATTERN   = /\d{1,2}\/\d{1,2}\/\d{4}|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i;
+const BLOG_WORDS     = [
+  "publicado", "artículo", "articulo", "leer más", "leer mas", "minutos de lectura",
+  "published", "article", "read more", "min read", "minutes to read",
+];
+const DATE_PATTERN   = /\d{1,2}\/\d{1,2}\/\d{4}|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|june|july|august|september|october|november|december/i;
 
-/* Ego vs cliente */
-const EGO_WORDS      = ["nosotros", "nuestra", "nuestro", "somos", "tenemos", "ofrecemos"];
-const CLIENT_WORDS   = [" vos ", " tu ", " tus ", "tu negocio", "tu empresa", "tus clientes"];
+/* Ego vs cliente — español + inglés */
+const EGO_WORDS      = [
+  "nosotros", "nuestra", "nuestro", "somos", "tenemos", "ofrecemos",
+  " we ", " our ", "we are", "we offer", "we provide",
+];
+const CLIENT_WORDS   = [
+  " vos ", " tu ", " tus ", "tu negocio", "tu empresa", "tus clientes",
+  " you ", " your ", "your business", "your team",
+];
 
-/* Calidad de CTAs */
+/* Calidad de CTAs — español + inglés + SaaS */
 const STRONG_CTA_WORDS = [
+  /* ES */
   "cotizá", "cotiza", "solicitá", "solicita", "agendá", "agenda",
   "contactanos", "contactá", "contacta", "empezá", "empieza",
   "obtenés", "reservá", "reserva", "consultá", "consulta",
   "hablar con", "quiero", "necesito", "agendar", "cotizar",
   "solicitar", "contratar",
+  /* EN */
+  "get started", "sign up", "try free", "start now", "contact us",
+  "get a quote", "book a demo", "book demo", "schedule", "request",
+  "subscribe", "get access", "claim",
+  /* SaaS */
+  "free trial", "start trial", "start free", "try for free",
+  "join", "demo", "free demo",
 ];
 const WEAK_CTA_WORDS = [
+  /* ES */
   "ver más", "ver mas", "leer más", "leer mas", "click aquí", "click aqui",
-  "más información", "mas informacion", "enviar", "aceptar", "submit",
+  "más información", "mas informacion", "enviar", "aceptar",
+  /* EN */
+  "learn more", "read more", "click here", "submit", "send",
 ];
 
 /* Análisis semántico */
@@ -75,37 +101,60 @@ const GENERIC_H1_WORDS = [
   "líderes", "lideres", "empresa líder", "empresa lider",
   "los mejores", "calidad premium", "innovadores",
   "excelencia", "soluciones integrales", "comprometidos",
+  "leaders", "the best", "premium quality", "innovative", "excellence",
+  "integrated solutions", "committed",
 ];
 const BENEFIT_WORDS_H1 = [
+  /* ES */
   "aumentar", "reducir", "mejorar", "optimizar", "ganar", "ahorrar",
   "crecer", "escalar", "resolver", "lograr",
   "tu negocio", "tu empresa", "tus clientes", "tu equipo",
+  /* EN */
+  "increase", "reduce", "improve", "save", "grow", "scale",
+  "optimize", "boost", "maximize", "streamline",
+  "your business", "your team", "your company",
 ];
 const FEATURE_WORDS = [
   "sistema", "estructura", "material", "modelo", "tipo", "componente",
   "módulo", "modulo", "versión", "version", "especificación", "especificacion",
   "técnico", "tecnico",
+  "system", "structure", "component", "module", "specification", "technical",
 ];
 const BENEFIT_WORDS = [
+  /* ES */
   "aumentar", "reducir", "mejorar", "optimizar", "ganar", "ahorrar",
   "resolver", "simplificar", "acelerar", "maximizar",
+  /* EN */
+  "increase", "reduce", "improve", "optimize", "save", "grow",
+  "scale", "boost", "maximize", "streamline", "simplify", "accelerate",
 ];
 const CLAIM_WORDS = [
-  "líder", "lider", "mejor", "único", "unico",
-  "revolucionario", "premium", "innovador",
+  "líder", "lider", "mejor", "único", "unico", "revolucionario", "premium", "innovador",
+  "leading", "best", "unique", "revolutionary", "innovative", "number one", "top rated",
 ];
 
-/* Social proof */
+/* Social proof — español + inglés */
 const SOCIAL_PROOF_WORDS = [
   "testimonios", "testimonio", "opiniones", "reseñas", "resenas",
   "casos de éxito", "casos de exito", "años de experiencia",
   "proyectos realizados", "empresas que confían", "empresas que confian",
+  "testimonials", "reviews", "case studies", "years of experience",
+  "clients served", "companies trust", "trusted by", "success stories",
 ];
 
-/* Tipo de negocio */
-const B2B_WORDS       = ["proyecto", "logística", "logistica", "industria", "depósito", "deposito", "almacenamiento"];
-const ECOMMERCE_WORDS = ["carrito", "envío", "envio", "pagar", "stock", "tienda"];
-const SERVICES_WORDS  = ["consultoría", "consultoria", "asesoría", "asesoria", "estrategia", "agencia"];
+/* Tipo de negocio — español + inglés */
+const B2B_WORDS       = [
+  "proyecto", "logística", "logistica", "industria", "depósito", "deposito", "almacenamiento",
+  "project", "logistics", "industry", "warehouse", "storage", "enterprise",
+];
+const ECOMMERCE_WORDS = [
+  "carrito", "envío", "envio", "pagar", "stock", "tienda",
+  "cart", "shipping", "checkout", "payment", "shop", "store",
+];
+const SERVICES_WORDS  = [
+  "consultoría", "consultoria", "asesoría", "asesoria", "estrategia", "agencia",
+  "consulting", "advisory", "strategy", "agency", "marketing",
+];
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -257,13 +306,22 @@ function analyze(html: string, url: string): CopyResult {
   if (altCoverage > 0.8) seoScore += 2;
 
   /* Cap si falta H1, meta description o alt texts */
-  if (h1Count === 0 || !hasMetaDesc || altCoverage < 0.8) {
-    seoScore = Math.min(seoScore, 6);
-  }
+  const seoRaw     = seoScore;
+  const capReasons = [
+    h1Count === 0      && "sin H1",
+    !hasMetaDesc       && "sin meta description",
+    altCoverage < 0.8  && `alts ${Math.round(altCoverage * 100)}%<80%`,
+  ].filter(Boolean);
+  if (capReasons.length > 0) seoScore = Math.min(seoScore, 6);
   seoScore = clamp(seoScore, 1, 10);
 
-  /* Log de debug para SEO */
-  console.log(`[audit/copy] SEO — title(${hasTitle}): "${titleText.slice(0, 50)}" | meta(${hasMetaDesc}): "${metaContent.slice(0, 50)}" | h1=${h1Count} | imgs=${imgs.length} alt=${imgWithAlt}(${Math.round(altCoverage * 100)}%) | score=${seoScore}`);
+  /* Log de debug para SEO — visible en consola del servidor */
+  console.log(`[audit/copy][SEO] ${url.slice(0, 70)}`);
+  console.log(`  title  (>10c): ${hasTitle ? "✓" : "✗"} "${titleText.slice(0, 60)}"`);
+  console.log(`  meta   (>50c): ${hasMetaDesc ? "✓" : "✗"} "${metaContent.slice(0, 60)}" (${metaContent.length}c)`);
+  console.log(`  h1 count: ${h1Count} ${h1Count === 1 ? "✓" : h1Count === 0 ? "✗ falta" : "✗ duplicado"}`);
+  console.log(`  imgs: ${imgs.length} total, ${imgWithAlt} con alt (${Math.round(altCoverage * 100)}%) ${altCoverage > 0.8 ? "✓" : "✗"}`);
+  console.log(`  score: raw=${seoRaw}${capReasons.length ? ` → cap(6) por [${capReasons.join(", ")}]` : " → sin cap"} → final=${seoScore}`);
 
   /* ── 5. Social proof ─────────────────────────────────────────────── */
   const hasSocialProofText = SOCIAL_PROOF_WORDS.some((w) => bodyLower.includes(w));
