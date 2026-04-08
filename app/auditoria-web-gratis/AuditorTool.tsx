@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { FormFriction, PageType } from "@/app/api/audit/copy/route";
+import type { FormFriction, PageType, BusinessType } from "@/app/api/audit/copy/route";
 
 /* ─── Constantes ──────────────────────────── */
 const WA_URL =
@@ -20,21 +20,26 @@ type Step  = "input" | "loading" | "results";
 type Level = "red" | "yellow" | "green";
 
 type Scenario =
-  | "optimal"
+  | "maquina"
   | "puerta-giratoria"
   | "cuello-de-botella"
+  | "doble-friccion"
   | "abismo";
 
 interface AuditResults {
-  speed:             number;
-  seo:               number;
-  copy:              number;
-  cta:               number;
-  lcpMs:             number;
-  hasSocialProof:    boolean;
-  hicksLawViolation: boolean;
-  formFriction:      FormFriction;
-  pageType:          PageType;
+  speed:              number;
+  seo:                number;
+  copy:               number;
+  cta:                number;
+  lcpMs:              number;
+  hasSocialProof:     boolean;
+  hicksLawViolation:  boolean;
+  formFriction:       FormFriction;
+  pageType:           PageType;
+  businessType:       BusinessType;
+  hasGenericH1:       boolean;
+  hasFeatureBias:     boolean;
+  hasUnsubstantiated: boolean;
 }
 
 /* ─── Semáforo ────────────────────────────── */
@@ -49,156 +54,177 @@ const LEVEL_COLOR: Record<Level, string> = {
   yellow: "#F59E0B",
   green:  "#3FC87A",
 };
-
 const LEVEL_LABEL: Record<Level, string> = {
   red:    "Crítico",
   yellow: "Mejorable",
   green:  "Bueno",
 };
 
-function scoreColor(score: number) { return LEVEL_COLOR[getLevel(score)]; }
+function scoreColor(score: number)   { return LEVEL_COLOR[getLevel(score)]; }
 function overallColor(score: number) {
   if (score <= 40) return "#EF4444";
   if (score <= 70) return "#F59E0B";
   return "#3FC87A";
 }
 
-/* ─── Mensajes base por categoría ────────────────────────────────────── */
+/* ─── Mensajes base ──────────────────────── */
 type Category = "speed" | "seo" | "copy" | "cta";
 
 const BASE_MESSAGES: Record<Category, Record<Level, string>> = {
   speed: {
-    red:    "Tu web tiene el freno de mano puesto. Según datos de Amazon y Google, cada segundo de carga extra te está costando hasta un 10% de tus ventas potenciales. El 90% de los usuarios abandona un sitio que tarda más de 5 segundos.",
-    yellow: "Tu sitio carga bien en desktop pero tiene margen de mejora en mobile. El 70% de tus visitantes navegan desde el celular — cada segundo cuenta.",
-    green:  "Excelente velocidad. Tu sitio carga rápido y no pierde clientes por este motivo.",
+    red:    "Tu web tiene el freno de mano puesto. Cada segundo de carga extra cuesta hasta un 10% de conversiones (Google). Con mejoras de performance podés recuperar ese tráfico perdido sin cambiar una sola línea de copy.",
+    yellow: "Tu sitio carga bien en desktop pero tiene margen en mobile. El 70% de tus visitantes navegan desde el celular. Optimizaciones puntuales en imágenes y scripts pueden marcar una diferencia notable en tus conversiones.",
+    green:  "Excelente velocidad. Tu sitio no pierde clientes por este motivo. Enfocá la energía en el mensaje y las llamadas a la acción.",
   },
   seo: {
-    red:    "Sos invisible para Google. El 70% de los clientes potenciales eligen entre los primeros 3 resultados — y hoy tu sitio no califica para competir por esos lugares.",
-    yellow: "Tu visibilidad en Google tiene oportunidades de mejora. Hay ajustes simples que pueden aumentar significativamente tu tráfico orgánico.",
-    green:  "Buenas bases de SEO. Tu sitio está bien posicionado para aparecer en búsquedas relevantes.",
+    red:    "Tu sitio tiene problemas técnicos de SEO que limitan tu visibilidad. Con ajustes en el título, la descripción y los encabezados podés mejorar tu posicionamiento significativamente sin inversión en publicidad.",
+    yellow: "Tus bases de SEO están pero hay oportunidades claras de mejora. Completar los elementos faltantes puede aumentar tu tráfico orgánico de forma sostenida.",
+    green:  "Buenas bases técnicas de SEO. Tu sitio tiene los elementos correctos para posicionarse. Ahora el foco debe estar en la calidad del contenido y la autoridad de dominio.",
   },
   copy: {
-    red:    "Tu sitio habla demasiado de vos y poco de tu cliente. Estudios de Nielsen Norman Group muestran que los usuarios leen solo el 20% de una página — si ese 20% no habla de sus problemas, se van.",
-    yellow: "Tu mensaje podría ser más persuasivo. Los sitios orientados al cliente convierten hasta un 200% más que los que enumeran características.",
-    green:  "Tu copy está orientado al cliente. Buen trabajo comunicando valor.",
+    red:    "Tu mensaje no conecta con lo que el cliente necesita escuchar. Los sitios orientados al cliente convierten hasta 200% más. Con ajustes en el copy podés transformar el tráfico existente en consultas reales.",
+    yellow: "Tu mensaje podría ser más persuasivo. Hay oportunidades claras para orientar mejor el copy hacia los problemas y deseos de tu cliente.",
+    green:  "Tu copy está bien orientado al cliente. El mensaje comunica valor de forma clara. Seguí iterando en base a datos reales de comportamiento.",
   },
   cta: {
-    red:    "Tu sitio no le dice claramente a los visitantes qué hacer. Un visitante sin dirección no actúa — y se va a la competencia que sí se lo dice.",
-    yellow: "Tus llamadas a la acción existen pero podrían ser más fuertes y frecuentes.",
-    green:  "Tus CTAs son claros y frecuentes. Los visitantes saben exactamente qué hacer.",
+    red:    "Tu sitio no guía al visitante hacia la acción. Un CTA claro puede aumentar las conversiones de forma inmediata, sin cambiar el diseño ni el presupuesto de publicidad.",
+    yellow: "Tus llamadas a la acción existen pero podrían ser más fuertes. Cambiar el texto por verbos de acción concretos puede aumentar el click-through de manera significativa.",
+    green:  "Tus CTAs son claros y están bien posicionados. Los visitantes saben exactamente qué hacer cuando llegan.",
   },
 };
 
 /* ─── Flags para mensajes contextuales ───── */
 interface MsgFlags {
-  hasSocialProof:    boolean;
-  hicksLawViolation: boolean;
-  formFriction:      FormFriction;
-  pageType:          PageType;
+  hasSocialProof:     boolean;
+  hicksLawViolation:  boolean;
+  formFriction:       FormFriction;
+  pageType:           PageType;
+  businessType:       BusinessType;
+  hasGenericH1:       boolean;
+  hasFeatureBias:     boolean;
+  hasUnsubstantiated: boolean;
+}
+
+/* ─── Social proof por tipo de negocio ───── */
+function getSocialProofMsg(bt: BusinessType): string {
+  switch (bt) {
+    case "ecommerce":
+      return "Sin reseñas de clientes visibles, los compradores no tienen motivo para preferirte. Las tiendas con reviews activos convierten hasta 3x más. Agregá testimonios o calificaciones — es uno de los cambios de mayor impacto que podés hacer.";
+    case "b2b":
+      return "Para clientes B2B, los logos de empresas con las que trabajaste y los casos de éxito con resultados medibles son el principal factor de confianza. Mostrar evidencia de tu experiencia puede aumentar tu tasa de conversión de manera significativa.";
+    case "services":
+      return "En servicios profesionales, el cliente compra confianza antes que precio. Sin testimonios o resultados concretos, el visitante no puede validar tu experiencia. Un caso de éxito con número real vale más que diez afirmaciones genéricas.";
+    default:
+      return "Tu web se siente sola. El cliente actual no te cree a vos, le cree a otros clientes. Agregar testimonios, logos o evidencia de clientes anteriores puede multiplicar tu tasa de contacto de forma notable.";
+  }
 }
 
 /* ─── Selector de mensaje por categoría ──── */
 function getMessage(cat: Category, score: number, flags: MsgFlags): string {
-  const { pageType, hasSocialProof, hicksLawViolation, formFriction } = flags;
+  const {
+    pageType, businessType, hasSocialProof,
+    hicksLawViolation, formFriction,
+    hasGenericH1, hasFeatureBias, hasUnsubstantiated,
+  } = flags;
 
-  /* ── Copy: mensajes según tipo de página ── */
+  /* ── Copy ────────────────────────────────────────────────────────── */
   if (cat === "copy") {
     if (pageType === "institutional") {
-      return "Esta es una página institucional — hablar de la empresa es lo esperado. La oportunidad está en llevar al visitante hacia tus páginas de conversión con CTAs claros.";
-    }
-    if (pageType === "blog") {
-      return getLevel(score) === "green"
-        ? "Los titulares y descripciones de tus artículos están bien trabajados."
-        : "Los titulares de tus artículos definen si alguien hace clic o sigue scrolleando. Un buen título no describe el artículo — promete un resultado o revela un insight.";
-    }
-    if (!hasSocialProof && (pageType === "conversion" || pageType === "contact")) {
-      return "Tu web se siente sola. El cliente actual no te cree a vos, le cree a otros clientes. No mostrar testimonios o logos de marcas con las que trabajás es dejar dinero sobre la mesa.";
-    }
-  }
-
-  /* ── CTA: mensajes según tipo de página ── */
-  if (cat === "cta") {
-    if (pageType === "institutional" && score < 4) {
-      return "Tu página institucional no lleva al visitante a dar el siguiente paso. Cada página debe tener un camino claro hacia la conversión.";
-    }
-    if (pageType === "contact") {
-      if (score <= 7) {
-        return "Ofrecé WhatsApp como alternativa al formulario. Los usuarios prefieren contactar por donde ya están — el formulario solo no es suficiente.";
-      }
-      if (score > 7) {
-        return "Bien: tenés formulario y WhatsApp. Asegurate de que la primera respuesta llegue en menos de 5 minutos — ahí se gana o se pierde el cliente.";
-      }
+      return "Esta es una página institucional — hablar de la empresa es lo esperado. La oportunidad está en incluir CTAs claros que lleven al visitante hacia tus páginas de conversión o contacto.";
     }
     if (pageType === "blog") {
       return score >= 7
-        ? "Tus artículos tienen CTAs. Seguí midiendo cuáles generan más consultas para optimizar el copy de cada uno."
-        : "Los artículos de blog son una oportunidad de captura. Asegurate de que cada post tenga un CTA claro al final que lleve al visitante a dar el siguiente paso.";
+        ? "Los titulares de tus artículos están bien trabajados. Seguí midiendo qué temas generan más engagement y replicá ese formato."
+        : "Los titulares definen si alguien hace clic o sigue scrolleando. Un buen título no describe el artículo — promete un resultado concreto. Revisá y optimizá los titulares de tus posts principales.";
     }
-    /* Conversión: mensajes contextuales existentes */
+    if (hasGenericH1) {
+      return "Tu web tarda más en explicar qué hace que lo que el cliente tarda en irse. Necesitás una propuesta de valor que se entienda en 5 segundos: qué hacés, para quién, y qué resultado consiguen. Con ese ajuste solo en el H1 podés aumentar el tiempo en página de forma significativa.";
+    }
+    if (hasFeatureBias && pageType === "conversion") {
+      return "Tu sitio describe características pero no comunica beneficios claros. El cliente no compra un producto, compra el resultado que ese producto le da. Reformular el copy en términos de beneficios puede aumentar tu tasa de contacto de forma importante.";
+    }
+    if (hasUnsubstantiated && pageType === "conversion") {
+      return "Tu sitio hace afirmaciones fuertes sin respaldo. Decir 'somos los mejores' sin probarlo genera desconfianza, no ventas. Reemplazá esos claims con datos concretos: años de experiencia, cantidad de clientes, resultados medibles.";
+    }
+    if (!hasSocialProof && pageType === "conversion") {
+      return getSocialProofMsg(businessType);
+    }
+  }
+
+  /* ── CTA ─────────────────────────────────────────────────────────── */
+  if (cat === "cta") {
+    if (pageType === "institutional" && score <= 5) {
+      return "Tu página institucional no lleva al visitante al siguiente paso. Cada página necesita un camino claro hacia la conversión. Agregá al menos un CTA que dirija hacia tu página de servicios o contacto.";
+    }
+    if (pageType === "contact") {
+      if (score >= 8) {
+        return "Bien: tenés formulario y WhatsApp como alternativa. El siguiente factor crítico es el tiempo de respuesta — los clientes que reciben respuesta en menos de 5 minutos convierten a una tasa significativamente mayor.";
+      }
+      return "Ofrecé WhatsApp como alternativa visible al formulario. Los usuarios prefieren el canal donde ya están activos — el formulario solo no es suficiente para capturar a todos los interesados.";
+    }
+    if (pageType === "blog") {
+      return score >= 7
+        ? "Tus artículos tienen CTAs. Seguí midiendo cuáles generan más consultas para concentrar el esfuerzo donde el ROI es mayor."
+        : "Los artículos sin CTA son oportunidades perdidas. Agregá un llamado a la acción al final de cada post — puede ser tan simple como 'Contactanos para aplicar esto a tu negocio'.";
+    }
     if (formFriction === "missing") {
-      return "Tu sitio no tiene una forma clara de contacto. El cliente que quiere comprarte no sabe cómo hacerlo.";
+      return "Tu sitio no tiene una forma clara de contacto. El cliente que quiere comprarte no sabe cómo hacerlo. Agregá WhatsApp o un formulario simple y vas a ver resultados de inmediato.";
     }
     if (formFriction === "too_many_fields") {
-      return "Estás pidiendo demasiado antes de dar algo. Tu formulario es una barrera, no un puente. Reducir los campos multiplica las consultas de inmediato.";
+      return "Estás pidiendo demasiado antes de dar algo. Tu formulario es una barrera, no un puente. Reducir a 3 campos (nombre, email, mensaje) puede duplicar las consultas que recibís.";
     }
     if (hicksLawViolation) {
-      return "Tu hero tiene demasiadas opciones compitiendo. Al darle tantas decisiones al visitante en el primer vistazo, terminan sin elegir ninguna. Una sola acción dominante puede aumentar tus conversiones hasta un 20%.";
+      return "Tu hero tiene demasiadas opciones compitiendo. Cuando hay demasiadas decisiones, el visitante no elige ninguna (Ley de Hick). Una sola acción dominante arriba del fold puede aumentar tus conversiones de forma inmediata.";
+    }
+    /* CTAs débiles: si score bajo y no es por falta de contacto */
+    if (score <= 3) {
+      return "Tus botones usan palabras genéricas que no generan urgencia ni claridad. Cambiar 'Enviar' o 'Ver más' por 'Cotizá ahora' o 'Hablá con un especialista' puede aumentar el click-through de tus CTAs de manera significativa.";
     }
   }
 
   return BASE_MESSAGES[cat][getLevel(score)];
 }
 
-/* ─── Escenario combinado ─────────────────── */
-function getScenarioInfo(speedScore: number, copyScore: number): {
-  scenario:       Scenario;
-  isIntermediate: boolean;
-} {
-  const speedOk = speedScore >= 7;
-
-  if (speedOk && copyScore >= 7) return { scenario: "optimal",           isIntermediate: false };
-  if (speedOk)                   return { scenario: "puerta-giratoria",  isIntermediate: false };
-  if (copyScore >= 7)            return { scenario: "cuello-de-botella", isIntermediate: false };
-  if (copyScore >= 5)            return { scenario: "cuello-de-botella", isIntermediate: true  }; // zona intermedia
-  return                                { scenario: "abismo",            isIntermediate: false };
+/* ─── Escenario combinado (5 categorías) ──── */
+function getScenario(speedScore: number, copyScore: number): Scenario {
+  if (speedScore >= 7 && copyScore >= 7) return "maquina";
+  if (speedScore >= 7)                   return "puerta-giratoria";   // copy < 7
+  if (copyScore >= 7)                    return "cuello-de-botella";  // speed < 7
+  if (copyScore >= 5)                    return "doble-friccion";     // speed < 7, copy 5-6
+  return                                        "abismo";             // speed < 7, copy < 5
 }
 
-function getLossRange(scenario: Scenario, isIntermediate = false): [number, number] {
+function getLossRange(scenario: Scenario): [number, number] {
   switch (scenario) {
-    case "optimal":           return [0,  10];
+    case "maquina":           return [0,  10];
     case "puerta-giratoria":  return [40, 60];
-    case "cuello-de-botella": return isIntermediate ? [35, 55] : [65, 80];
+    case "cuello-de-botella": return [65, 80];
+    case "doble-friccion":    return [50, 70];
     case "abismo":            return [90, 95];
   }
 }
 
 const SCENARIO_DATA: Record<Scenario, { name: string; color: string }> = {
-  "optimal":           { name: "Buen estado general",  color: "#3FC87A" },
+  "maquina":           { name: "La Máquina de Ventas", color: "#3FC87A" },
   "puerta-giratoria":  { name: "La Puerta Giratoria",  color: "#F59E0B" },
   "cuello-de-botella": { name: "El Cuello de Botella", color: "#F97316" },
-  "abismo":            { name: "El Abismo",            color: "#EF4444" },
+  "doble-friccion":    { name: "Doble Fricción",        color: "#F97316" },
+  "abismo":            { name: "El Abismo",             color: "#EF4444" },
 };
 
-function getScenarioMessage(
-  scenario:       Scenario,
-  lossRange:      [number, number],
-  isIntermediate: boolean,
-): string {
-  const [min] = lossRange;
-
-  if (scenario === "cuello-de-botella" && isIntermediate) {
-    return "Tu sitio pierde visitantes por velocidad antes de que puedan leer tu propuesta. Con mejoras técnicas podés recuperar una parte importante de ese tráfico.";
-  }
-
+function getScenarioMessage(scenario: Scenario, lossRange: [number, number]): string {
+  const [min, max] = lossRange;
   switch (scenario) {
-    case "optimal":
-      return "Tu sitio tiene buenas bases. Sin embargo, siempre hay oportunidades de mejora que marcan la diferencia entre una web que existe y una que vende activamente.";
+    case "maquina":
+      return "Tu sitio tiene buenas bases técnicas y un mensaje claro. El margen de mejora existe pero no estás perdiendo clientes de forma significativa por estos factores. El foco ahora debería estar en optimización fina y en el proceso de ventas post-contacto.";
     case "puerta-giratoria":
-      return `Tu web es una puerta giratoria. Entra rápido, pero sale igual de rápido. Tenés el tráfico pero lo desperdiciás porque el mensaje no conecta con tu cliente. Cada mes que pasa así estás regalando el ${min}% de tu inversión en publicidad a la competencia.`;
+      return `Tu web es una puerta giratoria. El tráfico entra rápido pero sale igual. Tenés velocidad a tu favor pero el mensaje no conecta con lo que el cliente necesita escuchar. Cada mes que pasa así es inversión publicitaria regalada — alrededor del ${min}% de tu presupuesto. Con mejoras en el copy podés recuperar una parte importante de eso.`;
     case "cuello-de-botella":
-      return "Tu mensaje es bueno pero casi nadie llega a leerlo. La lentitud filtra a tus clientes por nivel de paciencia — y los impacientes son exactamente los que más compran. Estás perdiendo a tus mejores clientes antes de que vean tu propuesta.";
+      return "Tu propuesta es buena pero cuando un cliente llega con intención de compra, cualquier fricción técnica puede ser suficiente para mandarlo a la competencia. La velocidad filtra clientes antes de que lleguen a leer tu mensaje. Con mejoras de performance podés recuperar una parte importante de ese tráfico.";
+    case "doble-friccion":
+      return `Tu sitio enfrenta dos problemas simultáneos: la velocidad reduce el tráfico que llega a tu propuesta, y el mensaje tiene margen importante de mejora para convertir a los que sí llegan. Ninguno de los dos es crítico por sí solo, pero juntos generan una pérdida estimada del ${min}-${max}% de tus conversiones posibles. Un especialista puede mostrarte exactamente por dónde arrancar.`;
     case "abismo":
-      return "Tu web tiene una doble fuga de capital. Primero, la lentitud expulsa al 70% de tus visitas antes de que cargue. Segundo, el mensaje no retiene a los pocos que logran entrar. Estás operando al 5% de tu capacidad real de ventas.";
+      return "Tu web tiene una doble fuga de capital. La lentitud expulsa visitantes antes de que cargue, y el mensaje no retiene a los pocos que logran entrar. Con mejoras en ambos frentes podés multiplicar tus resultados actuales — un especialista puede mostrarte exactamente qué cambiar primero.";
   }
 }
 
@@ -260,6 +286,14 @@ function ScoreCard({
   );
 }
 
+/* ─── Etiqueta de tipo de página ─────────── */
+const PAGE_TYPE_LABEL: Record<string, string> = {
+  conversion:    "Pág. de conversión",
+  institutional: "Pág. institucional",
+  blog:          "Blog / listado",
+  contact:       "Pág. de contacto",
+};
+
 /* ─── Componente principal ────────────────── */
 export function AuditorTool() {
   const [step,     setStep]     = useState<Step>("input");
@@ -269,15 +303,9 @@ export function AuditorTool() {
   const [progress, setProgress] = useState(0);
   const [results,  setResults]  = useState<AuditResults | null>(null);
 
-  const { scenario, isIntermediate } = results
-    ? getScenarioInfo(results.speed, results.copy)
-    : { scenario: "optimal" as Scenario, isIntermediate: false };
-
-  const lossRange = results
-    ? getLossRange(scenario, isIntermediate)
-    : [0, 10] as [number, number];
-
-  const overall = results
+  const scenario  = results ? getScenario(results.speed, results.copy) : "maquina";
+  const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
+  const overall   = results
     ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
     : 0;
 
@@ -329,15 +357,19 @@ export function AuditorTool() {
       const copy = await copyRes.json();
 
       setResults({
-        speed:             ps.speedScore          ?? 5,
-        seo:               copy.seoScore          ?? 4,
-        copy:              copy.copyScore         ?? 4,
-        cta:               copy.ctaScore          ?? 4,
-        lcpMs:             ps.lcpMs               ?? 3000,
-        hasSocialProof:    copy.hasSocialProof    ?? false,
-        hicksLawViolation: copy.hicksLawViolation ?? false,
-        formFriction:      copy.formFriction      ?? "none",
-        pageType:          copy.pageType          ?? "conversion",
+        speed:              ps.speedScore          ?? 5,
+        seo:                copy.seoScore          ?? 4,
+        copy:               copy.copyScore         ?? 4,
+        cta:                copy.ctaScore          ?? 4,
+        lcpMs:              ps.lcpMs               ?? 3000,
+        hasSocialProof:     copy.hasSocialProof    ?? false,
+        hicksLawViolation:  copy.hicksLawViolation ?? false,
+        formFriction:       copy.formFriction      ?? "none",
+        pageType:           copy.pageType          ?? "conversion",
+        businessType:       copy.businessType      ?? "general",
+        hasGenericH1:       copy.hasGenericH1      ?? false,
+        hasFeatureBias:     copy.hasFeatureBias    ?? false,
+        hasUnsubstantiated: copy.hasUnsubstantiated ?? false,
       });
 
       setProgress(1);
@@ -358,12 +390,20 @@ export function AuditorTool() {
 
   const flags: MsgFlags = results
     ? {
-        hasSocialProof:    results.hasSocialProof,
-        hicksLawViolation: results.hicksLawViolation,
-        formFriction:      results.formFriction,
-        pageType:          results.pageType,
+        hasSocialProof:     results.hasSocialProof,
+        hicksLawViolation:  results.hicksLawViolation,
+        formFriction:       results.formFriction,
+        pageType:           results.pageType,
+        businessType:       results.businessType,
+        hasGenericH1:       results.hasGenericH1,
+        hasFeatureBias:     results.hasFeatureBias,
+        hasUnsubstantiated: results.hasUnsubstantiated,
       }
-    : { hasSocialProof: true, hicksLawViolation: false, formFriction: "none", pageType: "conversion" };
+    : {
+        hasSocialProof: true, hicksLawViolation: false, formFriction: "none",
+        pageType: "conversion", businessType: "general",
+        hasGenericH1: false, hasFeatureBias: false, hasUnsubstantiated: false,
+      };
 
   return (
     <AnimatePresence mode="wait">
@@ -464,10 +504,7 @@ export function AuditorTool() {
                 Análisis de <span className="text-[#7A8FA6] break-all">{url}</span>
               </p>
               <span className="font-body text-[0.6rem] uppercase tracking-[0.08em] px-2 py-0.5 rounded border border-white/[0.08] text-[#4A6070]">
-                {results.pageType === "conversion"    && "Pág. de conversión"}
-                {results.pageType === "institutional" && "Pág. institucional"}
-                {results.pageType === "blog"          && "Blog / listado"}
-                {results.pageType === "contact"       && "Pág. de contacto"}
+                {PAGE_TYPE_LABEL[results.pageType] ?? results.pageType}
               </span>
             </div>
             <button
@@ -478,7 +515,7 @@ export function AuditorTool() {
             </button>
           </div>
 
-          {/* 4 cards */}
+          {/* 4 score cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <ScoreCard label="Velocidad"            score={results.speed} message={getMessage("speed", results.speed, flags)} delay={0}   />
             <ScoreCard label="SEO"                  score={results.seo}   message={getMessage("seo",   results.seo,   flags)} delay={0.1} />
@@ -486,7 +523,7 @@ export function AuditorTool() {
             <ScoreCard label="Llamadas a la acción" score={results.cta}   message={getMessage("cta",   results.cta,   flags)} delay={0.3} />
           </div>
 
-          {/* Panel de impacto con escenario */}
+          {/* Panel de escenario e impacto */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -508,7 +545,7 @@ export function AuditorTool() {
               <span className="font-mono text-2xl text-[#4A6070]">/100</span>
             </div>
 
-            {/* Escenario detectado — prominente */}
+            {/* Escenario detectado */}
             <div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 border"
               style={{
@@ -529,11 +566,11 @@ export function AuditorTool() {
 
             {/* Mensaje del escenario */}
             <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-3">
-              {getScenarioMessage(scenario, lossRange, isIntermediate)}
+              {getScenarioMessage(scenario, lossRange)}
             </p>
 
             {/* Pérdida estimada */}
-            {scenario !== "optimal" && (
+            {scenario !== "maquina" && (
               <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
                 En un negocio con 500 visitas mensuales, eso son entre{" "}
                 <span className="text-white font-medium">{Math.round(500 * lossRange[0] / 100)}</span> y{" "}
@@ -543,8 +580,8 @@ export function AuditorTool() {
             )}
 
             {/* Disclaimer */}
-            <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[460px] mx-auto mb-8 leading-relaxed">
-              Estimación basada en estudios de Google, Amazon, Nielsen Norman Group y Robert Cialdini aplicados a los indicadores de tu sitio.
+            <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[480px] mx-auto mb-8 leading-relaxed">
+              Este análisis es orientativo y se basa en indicadores técnicos públicos de tu sitio, aplicando benchmarks de Google, Amazon, Nielsen Norman Group y Robert Cialdini. No reemplaza una auditoría profesional completa que considere tu modelo de negocio, tus canales de venta y tus datos reales de conversión.
             </p>
 
             <a

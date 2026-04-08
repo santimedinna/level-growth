@@ -1,18 +1,23 @@
 import { NextResponse } from "next/server";
 import { load } from "cheerio";
 
-/* ─── Tipos ───────────────────────────────── */
+/* ─── Tipos ─────────────────────────────────────────────────────────── */
 export type FormFriction = "none" | "missing" | "too_many_fields" | "optimal";
 export type PageType     = "conversion" | "institutional" | "blog" | "contact";
+export type BusinessType = "b2b" | "ecommerce" | "services" | "general";
 
 export interface CopyResult {
-  seoScore:          number;
-  copyScore:         number;
-  ctaScore:          number;
-  hasSocialProof:    boolean;
-  hicksLawViolation: boolean;
-  formFriction:      FormFriction;
-  pageType:          PageType;
+  seoScore:           number;
+  copyScore:          number;
+  ctaScore:           number;
+  hasSocialProof:     boolean;
+  hicksLawViolation:  boolean;
+  formFriction:       FormFriction;
+  pageType:           PageType;
+  businessType:       BusinessType;
+  hasGenericH1:       boolean;   /* H1/H2 genérico sin propuesta de valor */
+  hasFeatureBias:     boolean;   /* Describe features, no beneficios */
+  hasUnsubstantiated: boolean;   /* Claims fuertes sin evidencia */
 }
 
 interface CacheEntry {
@@ -20,24 +25,74 @@ interface CacheEntry {
   expires: number;
 }
 
-/* ─── Caché en memoria 24h ────────────────── */
+/* ─── Caché en memoria 24h ───────────────────────────────────────────── */
 const cache = new Map<string, CacheEntry>();
 const TTL   = 24 * 60 * 60 * 1000;
 
-/* ─── Vocabulario ─────────────────────────── */
-const EGO_WORDS    = ["nosotros", "nuestra", "nuestro", "somos", "tenemos", "ofrecemos"];
-const CLIENT_WORDS = ["vos", " tu ", " tus ", "buscás", "necesitás", "querés", "podés"];
-const ACTION_WORDS = [
-  "comprar", "agendar", "contactar", "cotizar", "consultar",
-  "contratar", "solicitar", "escribir", "llamar", "reservar",
-];
-const SOCIAL_PROOF_WORDS = [
-  "testimonio", "testimonios", "opiniones", "clientes", "reseñas", "experiencia",
-];
-const SERVICE_WORDS  = ["servicio", "producto", "solución", "soluciones", "ofrecemos", "precio", "plan"];
-const BLOG_WORDS     = ["publicado", "artículo", "articulo", "leer más", "leer mas", "minutos de lectura", "min de lectura"];
+/* ─── Vocabulario ────────────────────────────────────────────────────── */
+
+/* Señales de conversión */
+const SERVICE_WORDS  = ["servicio", "solución", "solucion", "producto", "ofrecemos", "instalación", "instalacion", "asesoría", "asesoria", "precio", "plan"];
+const RESULT_VERBS   = ["aumentá", "aumenta", "reducí", "reduce", "ahorrá", "ahorra", "optimizá", "optimiza", "mejorá", "mejora", "lográ", "logra"];
+const STATS_PATTERN  = /\d+\s*%|\d+\s*(clientes|años|anos|proyectos|casos|eventos|empresas)/i;
+
+/* Blog */
+const BLOG_WORDS     = ["publicado", "artículo", "articulo", "leer más", "leer mas", "minutos de lectura"];
 const DATE_PATTERN   = /\d{1,2}\/\d{1,2}\/\d{4}|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i;
-const STATS_PATTERN  = /\d+\s*%|\d+\s*(clientes|años|proyectos|empresas|casos)/i;
+
+/* Ego vs cliente */
+const EGO_WORDS      = ["nosotros", "nuestra", "nuestro", "somos", "tenemos", "ofrecemos"];
+const CLIENT_WORDS   = [" vos ", " tu ", " tus ", "tu negocio", "tu empresa", "tus clientes"];
+
+/* Calidad de CTAs */
+const STRONG_CTA_WORDS = [
+  "cotizá", "cotiza", "solicitá", "solicita", "agendá", "agenda",
+  "contactanos", "contactá", "contacta", "empezá", "empieza",
+  "obtenés", "reservá", "reserva", "consultá", "consulta",
+  "hablar con", "quiero", "necesito", "agendar", "cotizar",
+  "solicitar", "contratar",
+];
+const WEAK_CTA_WORDS = [
+  "ver más", "ver mas", "leer más", "leer mas", "click aquí", "click aqui",
+  "más información", "mas informacion", "enviar", "aceptar", "submit",
+];
+
+/* Análisis semántico */
+const GENERIC_H1_WORDS = [
+  "líderes", "lideres", "empresa líder", "empresa lider",
+  "los mejores", "calidad premium", "innovadores",
+  "excelencia", "soluciones integrales", "comprometidos",
+];
+const BENEFIT_WORDS_H1 = [
+  "aumentar", "reducir", "mejorar", "optimizar", "ganar", "ahorrar",
+  "crecer", "escalar", "resolver", "lograr",
+  "tu negocio", "tu empresa", "tus clientes", "tu equipo",
+];
+const FEATURE_WORDS = [
+  "sistema", "estructura", "material", "modelo", "tipo", "componente",
+  "módulo", "modulo", "versión", "version", "especificación", "especificacion",
+  "técnico", "tecnico",
+];
+const BENEFIT_WORDS = [
+  "aumentar", "reducir", "mejorar", "optimizar", "ganar", "ahorrar",
+  "resolver", "simplificar", "acelerar", "maximizar",
+];
+const CLAIM_WORDS = [
+  "líder", "lider", "mejor", "único", "unico",
+  "revolucionario", "premium", "innovador",
+];
+
+/* Social proof */
+const SOCIAL_PROOF_WORDS = [
+  "testimonios", "testimonio", "opiniones", "reseñas", "resenas",
+  "casos de éxito", "casos de exito", "años de experiencia",
+  "proyectos realizados", "empresas que confían", "empresas que confian",
+];
+
+/* Tipo de negocio */
+const B2B_WORDS       = ["proyecto", "logística", "logistica", "industria", "depósito", "deposito", "almacenamiento"];
+const ECOMMERCE_WORDS = ["carrito", "envío", "envio", "pagar", "stock", "tienda"];
+const SERVICES_WORDS  = ["consultoría", "consultoria", "asesoría", "asesoria", "estrategia", "agencia"];
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -45,6 +100,7 @@ const USER_AGENTS = [
   "Mozilla/5.0 (compatible; LevelGrowthAudit/1.0; +https://levelgrowthagency.com)",
 ];
 
+/* ─── Utilidades ─────────────────────────────────────────────────────── */
 function countOccurrences(text: string, words: string[]): number {
   const lower = text.toLowerCase();
   return words.reduce((sum, w) => sum + (lower.split(w).length - 1), 0);
@@ -59,210 +115,286 @@ function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
 
-/* ─── Detección de tipo de página por votación ─────────────────────── */
+/* ─── Tipo de negocio ────────────────────────────────────────────────── */
+function detectBusinessType(bodyLower: string): BusinessType {
+  const b2b  = countOccurrences(bodyLower, B2B_WORDS);
+  const ecom = countOccurrences(bodyLower, ECOMMERCE_WORDS);
+  const svc  = countOccurrences(bodyLower, SERVICES_WORDS);
+  const max  = Math.max(b2b, ecom, svc);
+  if (max < 2)                return "general";
+  if (b2b >= ecom && b2b >= svc) return "b2b";
+  if (ecom >= svc)            return "ecommerce";
+  return "services";
+}
+
+/* ─── Tipo de página por votación de señales ────────────────────────── */
 function detectPageType(
-  $:              ReturnType<typeof load>,
-  bodyText:       string,
-  bodyLower:      string,
-  url:            string,
-  uniqueCtaTexts: Set<string>,
+  $:           ReturnType<typeof load>,
+  bodyText:    string,
+  bodyLower:   string,
+  url:         string,
+  allCtaCount: number,
 ): PageType {
-  let conversionPts    = 0;
-  let institutionalPts = 0;
-  let blogPts          = 0;
-  let contactPts       = 0;
+  let convPts = 0, instPts = 0, blogPts = 0, ctcPts = 0;
 
   const h1Text      = $("h1").first().text().toLowerCase().trim();
   const h1WordCount = h1Text.split(/\s+/).filter(Boolean).length;
   const headingText = $("h1, h2").text().toLowerCase();
 
-  /* ── Señales de página de CONVERSIÓN ────────────────────────────── */
-  if (h1WordCount > 0 && h1WordCount < 15)                                     conversionPts++; // H1 conciso
-  if ($("section, body > div, main > div").length > 3)                         conversionPts++; // Múltiples secciones
-  if (STATS_PATTERN.test(bodyText))                                             conversionPts++; // Métricas/estadísticas
-  if (SERVICE_WORDS.some((w) => bodyLower.includes(w)))                        conversionPts++; // Descripción de servicios
-  try { if (new URL(url).pathname.replace(/\/$/, "") === "") conversionPts++; } catch {}        // Path raíz "/"
-  if (uniqueCtaTexts.size > 2)                                                  conversionPts++; // Más de 2 CTAs distintos
+  /* ── Conversión ───────────────────────── */
+  if (h1WordCount > 0 && h1WordCount < 15)                       convPts++;
+  if (STATS_PATTERN.test(bodyText))                              convPts++;
+  if (allCtaCount > 2)                                           convPts++;
+  if (SERVICE_WORDS.some((w) => bodyLower.includes(w)))         convPts++;
+  if ($("section, body > div, main > div").length > 3)          convPts++;
+  if (RESULT_VERBS.some((w) => bodyLower.includes(w)))          convPts++;
+  try { if (new URL(url).pathname.replace(/\/$/, "") === "") convPts++; } catch {}
 
-  /* ── Señales de página INSTITUCIONAL ────────────────────────────── */
-  if (/nosotros|equipo|historia|quiénes|quienes|about/.test(headingText))      institutionalPts++; // Título institucional
-  const egoCountRaw  = countOccurrences(bodyText, EGO_WORDS);
-  const clientCntRaw = countOccurrences(bodyText, CLIENT_WORDS);
-  if (egoCountRaw > 15 && egoCountRaw > clientCntRaw * 2)                      institutionalPts++; // Ratio ego muy alto
-  if (uniqueCtaTexts.size < 2)                                                  institutionalPts++; // Pocos CTAs
-  if (!SERVICE_WORDS.some((w) => bodyLower.includes(w)))                       institutionalPts++; // Sin servicios/precios
+  /* ── Institucional ────────────────────── */
+  const egoRaw = countOccurrences(bodyText, EGO_WORDS);
+  const cliRaw = countOccurrences(bodyText, CLIENT_WORDS);
+  if (/nosotros|equipo|historia|quiénes|quienes|about/.test(headingText)) instPts++;
+  if (egoRaw > 15 && egoRaw > cliRaw * 2)                       instPts++;
+  if (allCtaCount < 2)                                           instPts++;
+  if (!SERVICE_WORDS.some((w) => bodyLower.includes(w)))        instPts++;
 
-  /* ── Señales de BLOG/LISTADO ─────────────────────────────────────── */
-  if (DATE_PATTERN.test(bodyText))                                              blogPts++; // Fechas en el contenido
-  if ($("article").length > 4 || $("[class*='card'], [class*='post'], [class*='article']").length > 4) blogPts++; // Estructura repetitiva
-  if (BLOG_WORDS.some((w) => bodyLower.includes(w)))                           blogPts++; // Vocabulario de blog
-  if (!/servicio|producto|solución|precio|gratis|mejora|aumenta/i.test(h1Text)) blogPts++; // Sin H1 comercial
+  /* ── Blog / listado ───────────────────── */
+  if (DATE_PATTERN.test(bodyText))                               blogPts++;
+  if ($("article").length > 4 || $("[class*='card'],[class*='post'],[class*='article']").length > 4) blogPts++;
+  if (BLOG_WORDS.some((w) => bodyLower.includes(w)))            blogPts++;
+  if (!/servicio|producto|solución|solucion|precio|gratis|mejora/i.test(h1Text)) blogPts++;
 
-  /* ── Señales de página de CONTACTO ──────────────────────────────── */
+  /* ── Contacto ─────────────────────────── */
   const forms      = $("form");
   const inputCount = forms.length > 0
     ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
     : 0;
-  if (forms.length > 0 && inputCount > 2)                                       contactPts++; // Formulario prominente
-  if (/contacto|contactanos|escribinos|hablemos|consulta|cotizá|cotiza/.test(h1Text)) contactPts++; // H1 de contacto
-  if ($("section, main > div, article").length < 3)                             contactPts++; // Pocas secciones
-  if (!SERVICE_WORDS.some((w) => bodyLower.includes(w)))                       contactPts++; // Sin servicios
+  if (forms.length > 0 && inputCount > 2)                        ctcPts++;
+  if (/contacto|contactanos|escribinos|hablemos|consulta|cotizá|cotiza/.test(h1Text)) ctcPts++;
+  if ($("section, main > div, article").length < 3)              ctcPts++;
 
-  /* ── Clasificación: gana el que más puntos acumula ──────────────── */
-  const scores = [
-    { type: "conversion"    as PageType, pts: conversionPts    },
-    { type: "institutional" as PageType, pts: institutionalPts },
-    { type: "blog"          as PageType, pts: blogPts          },
-    { type: "contact"       as PageType, pts: contactPts       },
+  /* ── Clasificar ───────────────────────── */
+  const sorted = [
+    { type: "conversion"    as PageType, pts: convPts },
+    { type: "institutional" as PageType, pts: instPts },
+    { type: "blog"          as PageType, pts: blogPts },
+    { type: "contact"       as PageType, pts: ctcPts  },
   ].sort((a, b) => b.pts - a.pts);
 
-  // Empate o menos de 2 puntos para una categoría secundaria → conversión (caso más estricto)
-  if (scores[0].pts === scores[1].pts)                                return "conversion";
-  if (scores[0].type !== "conversion" && scores[0].pts < 2)          return "conversion";
-
-  return scores[0].type;
+  if (sorted[0].pts === sorted[1].pts)                          return "conversion";
+  if (sorted[0].type !== "conversion" && sorted[0].pts < 2)    return "conversion";
+  return sorted[0].type;
 }
 
-/* ─── Análisis heurístico principal ──────── */
+/* ─── Análisis completo ──────────────────────────────────────────────── */
 function analyze(html: string, url: string): CopyResult {
   const $ = load(html);
-
   const bodyText  = $("body").text();
   const bodyLower = bodyText.toLowerCase();
 
-  /* ── CTAs únicos (compartido entre detección y scoring) ── */
-  const uniqueCtaTexts = new Set<string>();
-  let actionBtnCount   = 0;
+  /* ── 1. CTAs: fuertes vs débiles ─────────────────────────────────── */
+  let strongCtaCount = 0;
+  let weakCtaCount   = 0;
+  const allCtaTexts  = new Set<string>();
+
   $("button, a").each((_, el) => {
     const text = $(el).text().toLowerCase().trim();
-    if (ACTION_WORDS.some((w) => text.includes(w)) && text.length > 1) {
-      uniqueCtaTexts.add(text);
-      actionBtnCount++;
+    if (!text || text.length < 2) return;
+    if (STRONG_CTA_WORDS.some((w) => text.includes(w))) {
+      strongCtaCount++;
+      allCtaTexts.add(text);
+    } else if (WEAK_CTA_WORDS.some((w) => text.includes(w))) {
+      weakCtaCount++;
+      allCtaTexts.add(text);
     }
   });
 
-  /* ── Tipo de página ──────────────────────────────────── */
-  const pageType = detectPageType($, bodyText, bodyLower, url, uniqueCtaTexts);
+  /* ── 2. Contacto disponible ──────────────────────────────────────── */
+  const forms     = $("form");
+  const hasWaLink = $("a[href*='wa.me'], a[href*='whatsapp']").length > 0
+                 || bodyLower.includes("wa.me")
+                 || bodyLower.includes("whatsapp");
+  const inputCount = forms.length > 0
+    ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
+    : 0;
+  const hasContact = hasWaLink || (forms.length > 0 && inputCount <= 5);
 
-  /* ── SEO (igual para todos los tipos) ───────────────── */
-  const hasTitle    = $("title").length > 0 && $("title").text().trim().length > 5;
-  const hasMetaDesc = ($('meta[name="description"]').attr("content") ?? "").trim().length > 10;
+  /* ── 3. Tipo de página y de negocio ──────────────────────────────── */
+  const pageType     = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
+  const businessType = detectBusinessType(bodyLower);
+
+  /* ── 4. SEO score (técnico puro) ─────────────────────────────────── */
+  const hasTitle    = $("title").text().trim().length > 10;
+  const hasMetaDesc = ($('meta[name="description"]').attr("content") ?? "").trim().length > 50;
   const h1Count     = $("h1").length;
 
-  let seoScore = 2;
-  if (hasTitle)      seoScore += 3;
-  if (hasMetaDesc)   seoScore += 3;
-  if (h1Count === 1) seoScore += 2;
-  if (h1Count !== 1) seoScore = Math.min(seoScore, 4);
+  const imgs        = $("img").toArray();
+  const imgWithAlt  = imgs.filter((el) => ($(el).attr("alt") ?? "").trim().length > 0).length;
+  const altCoverage = imgs.length === 0 ? 1 : imgWithAlt / imgs.length;
+
+  let seoScore = 0;
+  if (hasTitle)          seoScore += 2;
+  if (hasMetaDesc)       seoScore += 2;
+  if (h1Count === 1)     seoScore += 3; // exactamente uno
+  if (h1Count <= 1)      seoScore += 1; // sin duplicado
+  if (altCoverage > 0.8) seoScore += 2;
+
+  /* Cap si falta H1, meta description o alt texts */
+  if (h1Count === 0 || !hasMetaDesc || altCoverage < 0.8) {
+    seoScore = Math.min(seoScore, 6);
+  }
   seoScore = clamp(seoScore, 1, 10);
 
-  /* ── Copy ego vs cliente ─────────────────────────────── */
-  const egoCount  = countOccurrences(bodyText, EGO_WORDS);
-  const clientCnt = countOccurrences(bodyText, CLIENT_WORDS);
-  const total     = egoCount + clientCnt;
-
-  let copyScore: number;
-  if (total === 0) {
-    copyScore = 4;
-  } else {
-    const ratio = clientCnt / total;
-    copyScore   = Math.max(1, Math.round(ratio * 9) + 1);
-    // Penalizar ratio ego/cliente solo en conversión y contacto — en institucional es esperado
-    if ((pageType === "conversion" || pageType === "contact") && egoCount > clientCnt) {
-      copyScore = Math.min(copyScore, 5);
-    }
-  }
-
-  /* ── Social Proof (Cialdini) ─────────────────────────── */
+  /* ── 5. Social proof ─────────────────────────────────────────────── */
   const hasSocialProofText = SOCIAL_PROOF_WORDS.some((w) => bodyLower.includes(w));
-  const hasSocialProofImg  = $("img").toArray().some((el) => {
+  const hasSocialProofImg  = imgs.some((el) => {
     const alt = ($(el).attr("alt") ?? "").toLowerCase();
     return alt.includes("logo") || alt.includes("cliente");
   });
   const hasSocialProof = hasSocialProofText || hasSocialProofImg;
 
-  // Solo penalizar falta de social proof en páginas de conversión
-  if (pageType === "conversion" && !hasSocialProof) {
-    copyScore = Math.max(1, copyScore - 2);
-  }
+  /* ── 6. Flags semánticos ─────────────────────────────────────────── */
+  const headingArea = `${$("h1").first().text().toLowerCase()} ${$("h2").first().text().toLowerCase()}`;
 
-  // Blog: bonus leve si título y meta descripción son claros
+  const hasGenericH1 = GENERIC_H1_WORDS.some((w) => headingArea.includes(w))
+    && !BENEFIT_WORDS_H1.some((w) => headingArea.includes(w))
+    && !/\d+/.test(headingArea);
+
+  const featureCount  = countOccurrences(bodyText, FEATURE_WORDS);
+  const benefitCount  = countOccurrences(bodyText, BENEFIT_WORDS);
+  const hasFeatureBias = featureCount > 3 && (benefitCount === 0 || featureCount > benefitCount * 2);
+
+  const claimCount        = countOccurrences(bodyText, CLAIM_WORDS);
+  const hasNumericEvidence = STATS_PATTERN.test(bodyText);
+  const hasUnsubstantiated = claimCount > 2 && !hasNumericEvidence && !hasSocialProof;
+
+  /* ── 7. Copy score ───────────────────────────────────────────────── */
+  let copyScore: number;
+
   if (pageType === "blog") {
-    const h1Text   = $("h1").first().text().trim();
-    const metaDesc = ($('meta[name="description"]').attr("content") ?? "").trim();
-    if (h1Text.length > 5 && metaDesc.length > 10) copyScore = clamp(copyScore + 1, 1, 10);
+    /* Blog: solo claridad de titular y meta */
+    const h1Clean  = $("h1").first().text().trim();
+    const metaClean = ($('meta[name="description"]').attr("content") ?? "").trim();
+    copyScore = (h1Clean.length > 5 && metaClean.length > 10) ? 6 : 4;
+
+  } else {
+    /* Ratio base ego/cliente */
+    const egoCount = countOccurrences(bodyText, EGO_WORDS);
+    const clientCnt = countOccurrences(bodyText, CLIENT_WORDS);
+    const total     = egoCount + clientCnt;
+
+    if (total === 0) {
+      copyScore = 5;
+    } else {
+      const ratio = clientCnt / total;
+      copyScore   = Math.max(1, Math.round(ratio * 9) + 1);
+    }
+
+    /* Penalización: H1 genérico (conversion y contact) */
+    if (hasGenericH1 && (pageType === "conversion" || pageType === "contact")) {
+      copyScore = Math.min(copyScore, 5);
+    }
+
+    /* Penalización: features > beneficios (solo conversion) */
+    if (hasFeatureBias && pageType === "conversion") {
+      copyScore -= 1;
+    }
+
+    /* Penalización: claims sin evidencia (solo conversion) */
+    if (hasUnsubstantiated && pageType === "conversion") {
+      copyScore -= 1;
+    }
+
+    /* Penalización: ratio ego alto (solo conversion) */
+    const egoC  = countOccurrences(bodyText, EGO_WORDS);
+    const cliC  = countOccurrences(bodyText, CLIENT_WORDS);
+    if (pageType === "conversion" && cliC > 0 && egoC > cliC * 2) {
+      copyScore -= 1;
+    }
+
+    /* Penalización: falta de prueba social (solo conversion, por tipo de negocio) */
+    if (pageType === "conversion" && !hasSocialProof) {
+      switch (businessType) {
+        case "ecommerce": copyScore -= 2; break;
+        case "services":  copyScore -= 2; break;
+        case "b2b":       copyScore -= 1; break;
+        default:          copyScore -= 1; break;
+      }
+    }
   }
 
   copyScore = clamp(copyScore, 1, 10);
 
-  /* ── Contacto y formulario ───────────────────────────── */
-  const forms     = $("form");
-  const hasWaLink = $("a[href*='wa.me'], a[href*='whatsapp']").length > 0
-                 || bodyLower.includes("wa.me")
-                 || bodyLower.includes("whatsapp");
-
-  const inputCount   = forms.length > 0
-    ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
-    : 0;
-  const hasLightForm = forms.length > 0 && inputCount <= 5;
-  const hasContact   = hasWaLink || hasLightForm;
-
-  /* ── Score de CTA según tipo de página ──────────────── */
+  /* ── 8. CTA score ────────────────────────────────────────────────── */
   let ctaScore: number;
 
   if (pageType === "contact") {
-    // Páginas de contacto: mínimo 7 si hay formulario visible
-    if (forms.length > 0 && inputCount > 0) {
-      ctaScore = hasWaLink ? 9 : 7;      // WA como alternativa → excelente
-      if (inputCount > 5) ctaScore = Math.max(4, ctaScore - 2); // fricción penaliza
-    } else {
-      ctaScore = hasWaLink ? 6 : 2;
-    }
+    /* Contacto: mínimo 7 si hay formulario visible */
+    const hasForm = forms.length > 0 && inputCount > 0;
+    if (hasForm && hasWaLink)      ctaScore = 9;
+    else if (hasForm)              ctaScore = 7;
+    else if (hasWaLink)            ctaScore = 6;
+    else                           ctaScore = 2;
+    if (forms.length > 0 && inputCount > 5) ctaScore = Math.max(4, ctaScore - 2);
+
   } else if (pageType === "institutional") {
-    // Institucional: penalizar solo si no hay ningún CTA hacia conversión
-    ctaScore = uniqueCtaTexts.size === 0 ? 2
-             : uniqueCtaTexts.size === 1 ? 5
+    /* Institucional: penalizar solo si no hay CTAs */
+    ctaScore = allCtaTexts.size === 0 ? 2
+             : allCtaTexts.size === 1 ? 5
              : 7;
+
   } else {
-    // Conversión y Blog: lógica calibrada estándar
-    if (!hasContact) {
-      ctaScore = 1;
-    } else {
-      ctaScore = 6;
-      if (actionBtnCount >= 2) ctaScore = 8;
-      if (forms.length > 0 && inputCount > 5) ctaScore = Math.max(1, ctaScore - 2);
-    }
+    /* Conversión y blog: sistema de fuertes/débiles */
+    /* WhatsApp cuenta como 1 CTA fuerte efectivo */
+    const effectiveStrong = strongCtaCount + (hasWaLink ? 1 : 0);
+
+    if (effectiveStrong >= 2)         ctaScore = 8;
+    else if (effectiveStrong === 1)   ctaScore = 6;
+    else if (weakCtaCount > 0)        ctaScore = 3;
+    else                              ctaScore = 1;
+
+    /* Ajuste por formulario */
+    if (forms.length > 0 && inputCount > 5)       ctaScore -= 2;
+    else if (forms.length > 0 && inputCount <= 3) ctaScore += 1;
+
+    /* Sin contacto en absoluto */
+    if (!hasContact) ctaScore = Math.min(ctaScore, 2);
   }
 
-  /* ── Ley de Hick (solo en páginas de conversión) ────── */
-  const aboveFoldEls      = $("body").children().slice(0, 3);
-  const uniqueAboveCtas   = new Set<string>();
+  /* ── 9. Ley de Hick (solo conversion, above-the-fold) ───────────── */
+  const aboveFoldEls    = $("body").children().slice(0, 3);
+  const uniqueAboveCtas = new Set<string>();
   aboveFoldEls.find("button, a").each((_, el) => {
     const text = $(el).text().toLowerCase().trim();
-    if (ACTION_WORDS.some((w) => text.includes(w)) && text.length > 1) {
-      uniqueAboveCtas.add(text);
-    }
+    const isCta = STRONG_CTA_WORDS.some((w) => text.includes(w))
+               || WEAK_CTA_WORDS.some((w) => text.includes(w));
+    if (isCta && text.length > 1) uniqueAboveCtas.add(text);
   });
-  const hicksLawViolation = pageType === "conversion" && uniqueAboveCtas.size >= 4;
-  if (hicksLawViolation) ctaScore = Math.max(1, ctaScore - 2);
-
-  /* ── Fricción de formulario ─────────────────────────── */
-  let formFriction: FormFriction = "none";
-  if (!hasContact)                               formFriction = "missing";
-  else if (forms.length > 0 && inputCount > 5)  formFriction = "too_many_fields";
-  else if (forms.length > 0 && inputCount <= 3) formFriction = "optimal";
-
-  // Páginas institucionales y blog sin formulario no son "missing" — es lo esperado
-  if ((pageType === "institutional" || pageType === "blog") && formFriction === "missing") {
-    formFriction = "none";
-  }
+  const hicksLawViolation = pageType === "conversion" && uniqueAboveCtas.size > 4;
+  if (hicksLawViolation) ctaScore -= 1; // penalización -1
 
   ctaScore = clamp(ctaScore, 1, 10);
 
-  return { seoScore, copyScore, ctaScore, hasSocialProof, hicksLawViolation, formFriction, pageType };
+  /* ── 10. Fricción de formulario ──────────────────────────────────── */
+  let formFriction: FormFriction = "none";
+  if (!hasContact) {
+    /* Institucional y blog sin contacto es lo esperado */
+    formFriction = (pageType === "institutional" || pageType === "blog") ? "none" : "missing";
+  } else if (forms.length > 0 && inputCount > 5) {
+    formFriction = "too_many_fields";
+  } else if (forms.length > 0 && inputCount <= 3) {
+    formFriction = "optimal";
+  }
+
+  return {
+    seoScore, copyScore, ctaScore,
+    hasSocialProof, hicksLawViolation, formFriction,
+    pageType, businessType,
+    hasGenericH1, hasFeatureBias, hasUnsubstantiated,
+  };
 }
 
-/* ─── Handler ─────────────────────────────── */
+/* ─── Handler ────────────────────────────────────────────────────────── */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const raw = searchParams.get("url");
@@ -308,7 +440,8 @@ export async function GET(request: Request) {
   const fallback: CopyResult = {
     seoScore: 4, copyScore: 4, ctaScore: 4,
     hasSocialProof: false, hicksLawViolation: false, formFriction: "none",
-    pageType: "conversion",
+    pageType: "conversion", businessType: "general",
+    hasGenericH1: false, hasFeatureBias: false, hasUnsubstantiated: false,
   };
   return NextResponse.json(fallback);
 }
