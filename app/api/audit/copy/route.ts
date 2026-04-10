@@ -356,10 +356,12 @@ function analyze(html: string, url: string): CopyResult {
   /* Detectar H1 corrupto: demasiado largo o texto duplicado (ej: SSR que repite el contenido) */
   const h1LooksCorrupt = h1Len > 100 || /(.{20,})\1/.test(h1Text);
 
-  /* H1 válido: uno con longitud 10-70 sin corrupción, inferido desde meta, o corrupto pero title existe */
+  /* H1 válido: uno con longitud 10-70 sin corrupción, inferido desde meta,
+     corrupto pero title existe, o duplicado probable de animación CSS */
   const h1Valid = (h1Count === 1 && h1Len >= 10 && h1Len <= 70 && !h1LooksCorrupt)
                || (h1Count === 0 && inferredH1.length >= 10 && inferredH1.length <= 70)
-               || (h1LooksCorrupt && hasTitle);  // H1 corrupto pero <title> existe = sitio bien estructurado
+               || (h1LooksCorrupt && hasTitle)
+               || (h1Count === 2 && h1Len >= 10 && h1Len <= 70 && hasTitle); // duplicado probable animación
 
   console.log(`[SEO-H1] reconstructed="${h1Reconstructed.slice(0, 80)}" len=${h1Len} corrupt=${h1LooksCorrupt} valid=${h1Valid}`);
 
@@ -371,8 +373,9 @@ function analyze(html: string, url: string): CopyResult {
   if (hasTitle)          seoScore += 2;
   if (metaFull)          seoScore += 2;   // 50-160 chars: puntos completos
   else if (metaPartial)  seoScore += 1;   // existe pero fuera de rango
-  if (h1Valid)           seoScore += 4;   // un H1 con longitud correcta (10-70c)
-  else if (h1Count === 1) seoScore += 2;  // existe pero longitud fuera de rango
+  if (h1Valid)                          seoScore += 4;  // H1 correcto (o inferido / animación)
+  else if (h1Count === 1)              seoScore += 2;  // existe pero longitud fuera de rango
+  else if (h1Count === 2 && hasTitle)  seoScore += 3;  // duplicado pero sitio bien estructurado
   if (altCoverage > 0.8) seoScore += 2;
 
   /* Caps individuales por carencias críticas */
