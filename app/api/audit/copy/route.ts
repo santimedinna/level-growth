@@ -330,11 +330,13 @@ function analyze(html: string, url: string): CopyResult {
   const metaFull    = metaLen >= 50 && metaLen <= 160;
   const metaPartial = metaLen > 10 && !metaFull;
   const hasMetaDesc = metaFull || metaPartial;
-  const h1Count = $("h1").length;
+  const h1Count  = $("h1").length;
   /* Texto directo del H1 sin hijos anidados (spans, em, strong, etc.) */
-  const h1Text = ($("h1").first().clone().children().remove().end().text().trim())
-              || $("h1").first().text().trim();
-  const h1Len  = h1Text.length;
+  const h1Raw    = $("h1").first().text().trim();
+  const h1Direct = $("h1").first().clone().children().remove().end().text().trim();
+  const h1Text   = h1Direct.length >= 5 ? h1Direct : h1Raw;
+  const h1Len    = h1Text.length;
+  console.log(`[SEO-H1] raw="${h1Raw.slice(0, 80)}" direct="${h1Direct.slice(0, 80)}" using="${h1Text.slice(0, 80)}"`);
 
   /* Fallback para sitios CSR: inferir H1 desde og:title o twitter:title */
   const ogTitle      = ($('meta[property="og:title"]').attr("content") ?? "").trim();
@@ -360,12 +362,16 @@ function analyze(html: string, url: string): CopyResult {
   /* Caps individuales por carencias críticas */
   const seoRaw     = seoScore;
   const capReasons: string[] = [];
-  if (h1Count === 0)    { capReasons.push("sin H1"); }
-  if (!hasMetaDesc)     { capReasons.push("sin meta description"); }
+  /* h1Valid ya incorpora el inferredH1 — un sitio CSR sin H1 estático pero con og:title válido no se penaliza */
+  const effectiveH1 = h1Count > 0 || h1Valid;
+  if (!effectiveH1)      { capReasons.push("sin H1"); }
+  if (!hasMetaDesc)      { capReasons.push("sin meta description"); }
   if (altCoverage < 0.8) { capReasons.push(`alts ${Math.round(altCoverage * 100)}%<80%`); }
 
-  /* Sin H1 o sin meta desc: cap crítico en 6 */
-  if (h1Count === 0 || !hasMetaDesc) seoScore = Math.min(seoScore, 6);
+  /* Caps según combinación de carencias */
+  if (!effectiveH1 && !hasMetaDesc) seoScore = Math.min(seoScore, 6); // doble carencia crítica
+  if (!effectiveH1 &&  hasMetaDesc) seoScore = Math.min(seoScore, 7); // solo falta H1
+  if (!hasMetaDesc &&  effectiveH1) seoScore = Math.min(seoScore, 6); // solo falta meta desc
   /* Alt coverage insuficiente: cap en 7 (solo imágenes, no bloquea completamente) */
   if (altCoverage < 0.8) seoScore = Math.min(seoScore, 7);
   seoScore = clamp(seoScore, 1, 10);
