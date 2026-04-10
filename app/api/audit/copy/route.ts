@@ -80,6 +80,7 @@ const STRONG_CTA_WORDS = [
   "obtenés", "reservá", "reserva", "consultá", "consulta",
   "hablar con", "quiero", "necesito", "agendar", "cotizar",
   "solicitar", "contratar",
+  "empezar gratis", "registrate", "crear cuenta", "probar gratis",
   /* EN */
   "get started", "sign up", "try free", "start now", "contact us",
   "get a quote", "book a demo", "book demo", "schedule", "request",
@@ -303,8 +304,16 @@ function analyze(html: string, url: string): CopyResult {
   const titleText   = $("title").text().trim();
   const hasTitle    = titleText.length > 10;
   const metaContent = ($('meta[name="description"]').attr("content") ?? "").trim();
-  const hasMetaDesc = metaContent.length > 50;
+  const metaLen     = metaContent.length;
+  /* Meta description: 50-160 chars = puntos completos; >10 pero fuera de rango = parcial */
+  const metaFull    = metaLen >= 50 && metaLen <= 160;
+  const metaPartial = metaLen > 10 && !metaFull;
+  const hasMetaDesc = metaFull || metaPartial;
   const h1Count     = $("h1").length;
+  const h1Text      = $("h1").first().text().trim();
+  const h1Len       = h1Text.length;
+  /* H1 válido: exactamente uno, entre 10 y 70 caracteres */
+  const h1Valid     = h1Count === 1 && h1Len >= 10 && h1Len <= 70;
 
   const imgs        = $("img").toArray();
   const imgWithAlt  = imgs.filter((el) => ($(el).attr("alt") ?? "").trim().length > 0).length;
@@ -312,28 +321,32 @@ function analyze(html: string, url: string): CopyResult {
 
   let seoScore = 0;
   if (hasTitle)          seoScore += 2;
-  if (hasMetaDesc)       seoScore += 2;
-  if (h1Count === 1)     seoScore += 3; // exactamente uno
-  if (h1Count <= 1)      seoScore += 1; // sin duplicado (0 o 1)
+  if (metaFull)          seoScore += 2;   // 50-160 chars: puntos completos
+  else if (metaPartial)  seoScore += 1;   // existe pero fuera de rango
+  if (h1Valid)           seoScore += 4;   // un H1 con longitud correcta (10-70c)
+  else if (h1Count === 1) seoScore += 2;  // existe pero longitud fuera de rango
   if (altCoverage > 0.8) seoScore += 2;
 
-  /* Cap si falta H1, meta description o alt texts */
+  /* Caps individuales por carencias críticas */
   const seoRaw     = seoScore;
-  const capReasons = [
-    h1Count === 0      && "sin H1",
-    !hasMetaDesc       && "sin meta description",
-    altCoverage < 0.8  && `alts ${Math.round(altCoverage * 100)}%<80%`,
-  ].filter(Boolean);
-  if (capReasons.length > 0) seoScore = Math.min(seoScore, 6);
+  const capReasons: string[] = [];
+  if (h1Count === 0)    { capReasons.push("sin H1"); }
+  if (!hasMetaDesc)     { capReasons.push("sin meta description"); }
+  if (altCoverage < 0.8) { capReasons.push(`alts ${Math.round(altCoverage * 100)}%<80%`); }
+
+  /* Sin H1 o sin meta desc: cap crítico en 6 */
+  if (h1Count === 0 || !hasMetaDesc) seoScore = Math.min(seoScore, 6);
+  /* Alt coverage insuficiente: cap en 7 (solo imágenes, no bloquea completamente) */
+  if (altCoverage < 0.8) seoScore = Math.min(seoScore, 7);
   seoScore = clamp(seoScore, 1, 10);
 
   /* Log de debug para SEO — visible en consola del servidor */
   console.log(`[audit/copy][SEO] ${url.slice(0, 70)}`);
   console.log(`  title  (>10c): ${hasTitle ? "✓" : "✗"} "${titleText.slice(0, 60)}"`);
-  console.log(`  meta   (>50c): ${hasMetaDesc ? "✓" : "✗"} "${metaContent.slice(0, 60)}" (${metaContent.length}c)`);
-  console.log(`  h1 count: ${h1Count} ${h1Count === 1 ? "✓" : h1Count === 0 ? "✗ falta" : "✗ duplicado"}`);
+  console.log(`  meta   (50-160c): ${metaFull ? "✓ full" : metaPartial ? "~ partial" : "✗"} "${metaContent.slice(0, 60)}" (${metaLen}c)`);
+  console.log(`  h1 count: ${h1Count} ${h1Valid ? "✓ válido" : h1Count === 1 ? `~ existe pero len=${h1Len}` : h1Count === 0 ? "✗ falta" : "✗ duplicado"}`);
   console.log(`  imgs: ${imgs.length} total, ${imgWithAlt} con alt (${Math.round(altCoverage * 100)}%) ${altCoverage > 0.8 ? "✓" : "✗"}`);
-  console.log(`  score: raw=${seoRaw}${capReasons.length ? ` → cap(6) por [${capReasons.join(", ")}]` : " → sin cap"} → final=${seoScore}`);
+  console.log(`  score: raw=${seoRaw}${capReasons.length ? ` → caps [${capReasons.join(", ")}]` : " → sin cap"} → final=${seoScore}`);
 
   /* ── 5. Social proof ─────────────────────────────────────────────── */
   const hasSocialProofText = SOCIAL_PROOF_WORDS.some((w) => bodyLower.includes(w));
@@ -409,6 +422,12 @@ function analyze(html: string, url: string): CopyResult {
   copyScore = clamp(copyScore, 1, 10);
 
   /* ── 8. CTA score ────────────────────────────────────────────────── */
+
+  /* Email capture: input[type="email"] + botón en los primeros elementos → conversión directa */
+  const firstElements       = $("body").children().slice(0, 5);
+  const hasEmailCaptureCTA  = firstElements.find('input[type="email"]').length > 0
+                           && firstElements.find("button, input[type='submit']").length > 0;
+
   let ctaScore: number;
 
   if (pageType === "contact") {
@@ -455,6 +474,9 @@ function analyze(html: string, url: string): CopyResult {
   });
   const hicksLawViolation = pageType === "conversion" && uniqueAboveCtas.size > 4;
   if (hicksLawViolation) ctaScore -= 1; // penalización -1
+
+  /* Email capture above-the-fold = conversión directa → score mínimo 9 */
+  if (hasEmailCaptureCTA) ctaScore = Math.max(ctaScore, 9);
 
   ctaScore = clamp(ctaScore, 1, 10);
 

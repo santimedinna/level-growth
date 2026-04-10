@@ -22,7 +22,6 @@ type Level = "red" | "yellow" | "green";
 type Scenario =
   | "maquina"
   | "puerta-giratoria"
-  | "cuello-de-botella"
   | "doble-friccion"
   | "abismo";
 
@@ -190,33 +189,30 @@ function getMessage(cat: Category, score: number, flags: MsgFlags): string {
   return BASE_MESSAGES[cat][getLevel(score)];
 }
 
-/* ─── Escenario combinado (5 categorías) ──── */
-function getScenario(speedScore: number | null, copyScore: number): Scenario {
-  /* Si no pudimos medir velocidad, usamos 5 (neutral) para no sesgar el escenario */
-  const speed = speedScore ?? 5;
-  if (speed >= 7 && copyScore >= 7) return "maquina";
-  if (speed >= 7)                   return "puerta-giratoria";   // copy < 7
-  if (copyScore >= 7)               return "cuello-de-botella";  // speed < 7
-  if (copyScore >= 5)               return "doble-friccion";     // speed < 7, copy 5-6
-  return                                   "abismo";             // speed < 7, copy < 5
+/* ─── Escenario basado en puntaje general ──── */
+function getScenario(overall: number, ctaScore: number, copyScore: number): Scenario {
+  /* Regla de eslabón más débil: si CTA o copy son críticos, nunca es "maquina" */
+  const weakLink = ctaScore < 4 || copyScore < 4;
+  if (overall >= 85 && !weakLink) return "maquina";
+  if (overall >= 70)              return "puerta-giratoria";
+  if (overall >= 50)              return "doble-friccion";
+  return                                 "abismo";
 }
 
 function getLossRange(scenario: Scenario): [number, number] {
   switch (scenario) {
-    case "maquina":           return [0,  10];
-    case "puerta-giratoria":  return [40, 60];
-    case "cuello-de-botella": return [65, 80];
-    case "doble-friccion":    return [50, 70];
-    case "abismo":            return [90, 95];
+    case "maquina":          return [0,  10];
+    case "puerta-giratoria": return [30, 50];
+    case "doble-friccion":   return [50, 70];
+    case "abismo":           return [80, 95];
   }
 }
 
 const SCENARIO_DATA: Record<Scenario, { name: string; color: string }> = {
-  "maquina":           { name: "La Máquina de Ventas", color: "#3FC87A" },
-  "puerta-giratoria":  { name: "La Puerta Giratoria",  color: "#F59E0B" },
-  "cuello-de-botella": { name: "El Cuello de Botella", color: "#F97316" },
-  "doble-friccion":    { name: "Doble Fricción",        color: "#F97316" },
-  "abismo":            { name: "El Abismo",             color: "#EF4444" },
+  "maquina":          { name: "La Máquina de Ventas", color: "#3FC87A" },
+  "puerta-giratoria": { name: "La Puerta Giratoria",  color: "#F59E0B" },
+  "doble-friccion":   { name: "Doble Fricción",        color: "#F97316" },
+  "abismo":           { name: "El Abismo",             color: "#EF4444" },
 };
 
 function getScenarioMessage(scenario: Scenario, lossRange: [number, number]): string {
@@ -225,13 +221,11 @@ function getScenarioMessage(scenario: Scenario, lossRange: [number, number]): st
     case "maquina":
       return "Tu sitio tiene buenas bases técnicas y un mensaje claro. El margen de mejora existe pero no estás perdiendo clientes de forma significativa por estos factores. El foco ahora debería estar en optimización fina y en el proceso de ventas post-contacto.";
     case "puerta-giratoria":
-      return `Tu web es una puerta giratoria. El tráfico entra rápido pero sale igual. Tenés velocidad a tu favor pero el mensaje no conecta con lo que el cliente necesita escuchar. Cada mes que pasa así es inversión publicitaria regalada — alrededor del ${min}% de tu presupuesto. Con mejoras en el copy podés recuperar una parte importante de eso.`;
-    case "cuello-de-botella":
-      return "Tu propuesta es buena pero cuando un cliente llega con intención de compra, cualquier fricción técnica puede ser suficiente para mandarlo a la competencia. La velocidad filtra clientes antes de que lleguen a leer tu mensaje. Con mejoras de performance podés recuperar una parte importante de ese tráfico.";
+      return `Tu sitio está bien encaminado pero hay oportunidades claras de mejora en uno o más puntos del funnel. El eslabón más débil es el que más cuesta — identificarlo y resolverlo puede recuperar entre el ${min} y el ${max}% de las conversiones que hoy se pierden.`;
     case "doble-friccion":
-      return `Tu sitio enfrenta dos problemas simultáneos: la velocidad reduce el tráfico que llega a tu propuesta, y el mensaje tiene margen importante de mejora para convertir a los que sí llegan. Ninguno de los dos es crítico por sí solo, pero juntos generan una pérdida estimada del ${min}-${max}% de tus conversiones posibles. Un especialista puede mostrarte exactamente por dónde arrancar.`;
+      return `Tu sitio tiene fricción en más de un punto del funnel. Ningún problema individual es crítico por sí solo, pero juntos generan una pérdida estimada del ${min}-${max}% de tus conversiones posibles. Un especialista puede mostrarte exactamente por dónde arrancar para el mayor impacto.`;
     case "abismo":
-      return "Tu web tiene una doble fuga de capital. La lentitud expulsa visitantes antes de que cargue, y el mensaje no retiene a los pocos que logran entrar. Con mejoras en ambos frentes podés multiplicar tus resultados actuales — un especialista puede mostrarte exactamente qué cambiar primero.";
+      return "Tu sitio está perdiendo la gran mayoría de su potencial de conversión. Los problemas son sistémicos — velocidad, mensaje y llamadas a la acción trabajan en contra del visitante. Con mejoras coordinadas en estos frentes podés multiplicar tus resultados actuales de forma significativa.";
   }
 }
 
@@ -310,14 +304,14 @@ export function AuditorTool() {
   const [progress, setProgress] = useState(0);
   const [results,  setResults]  = useState<AuditResults | null>(null);
 
-  const scenario  = results ? getScenario(results.speed, results.copy) : "maquina";
-  const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
-  /* Si speed es null, el puntaje general se calcula solo con las 3 métricas conocidas */
+  /* overall primero — scenario lo necesita */
   const overall   = results
     ? results.speed !== null
       ? Math.round((results.speed + results.seo + results.copy + results.cta) * 2.5)
       : Math.round(((results.seo + results.copy + results.cta) / 30) * 100)
     : 0;
+  const scenario  = results ? getScenario(overall, results.cta, results.copy) : "maquina";
+  const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
 
   /* Rotar mensajes de carga */
   useEffect(() => {
