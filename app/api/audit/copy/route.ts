@@ -274,7 +274,7 @@ function analyze(html: string, url: string): CopyResult {
     const ariaLabel  = ($(el).attr("aria-label") ?? "").toLowerCase().trim();
     const titleAttr  = ($(el).attr("title") ?? "").toLowerCase().trim();
     const textToCheck = text || ariaLabel || titleAttr;
-    if (!textToCheck || textToCheck.length < 2) return;
+    if (!textToCheck || textToCheck.length < 3 || textToCheck.length > 80) return;
 
     if (STRONG_CTA_WORDS.some((w) => textToCheck.includes(w))) {
       strongCtaCount++;
@@ -478,8 +478,8 @@ function analyze(html: string, url: string): CopyResult {
     else                              ctaScore = 1;
 
     /* Ajuste por formulario */
-    if (forms.length > 0 && inputCount > 5)       ctaScore -= 2;
-    else if (forms.length > 0 && inputCount <= 3) ctaScore += 1;
+    if (forms.length > 0 && inputCount > 5 && effectiveStrong < 3) ctaScore -= 2;
+    else if (forms.length > 0 && inputCount <= 3)                  ctaScore += 1;
 
     /* Sin contacto en absoluto */
     if (!hasContact) ctaScore = Math.min(ctaScore, 2);
