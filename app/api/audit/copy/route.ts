@@ -314,7 +314,8 @@ function analyze(html: string, url: string): CopyResult {
   const inputCount = forms.length > 0
     ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
     : 0;
-  const hasContact = hasWaLink || (forms.length > 0 && inputCount <= 5);
+  const hasSignupLink = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']").length > 0;
+  const hasContact = hasWaLink || (forms.length > 0 && inputCount <= 5) || hasSignupLink || strongCtaCount >= 2;
 
   /* ── 3. Tipo de página y de negocio ──────────────────────────────── */
   const { type: pageType, scores: pageTypeScores } = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
