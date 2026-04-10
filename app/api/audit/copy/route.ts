@@ -450,6 +450,7 @@ function analyze(html: string, url: string): CopyResult {
                            && firstElements.find("button, input[type='submit']").length > 0;
 
   let ctaScore: number;
+  let effectiveStrong = 0;
 
   if (pageType === "contact") {
     /* Contacto: mínimo 7 si hay formulario visible */
@@ -469,7 +470,7 @@ function analyze(html: string, url: string): CopyResult {
   } else {
     /* Conversión y blog: sistema de fuertes/débiles */
     /* WhatsApp cuenta como 1 CTA fuerte efectivo */
-    const effectiveStrong = strongCtaCount + (hasWaLink ? 1 : 0);
+    effectiveStrong = strongCtaCount + (hasWaLink ? 1 : 0);
 
     if (effectiveStrong >= 2)         ctaScore = 8;
     else if (effectiveStrong === 1)   ctaScore = 6;
@@ -501,6 +502,8 @@ function analyze(html: string, url: string): CopyResult {
 
   /* Sitio JS-rendered con score inflado por fallback raw → cap en 7 */
   if (isLikelyJsRendered && ctaScore > 7) ctaScore = 7;
+
+  console.log(`[CTA-PATH] effectiveStrong=${effectiveStrong} weakCta=${weakCtaCount} forms=${forms.length} inputCount=${inputCount} hasContact=${hasContact} hasSignup=${hasSignupLink} hicksViolation=${hicksLawViolation} → ctaScore=${ctaScore}`);
 
   ctaScore = clamp(ctaScore, 1, 10);
 
