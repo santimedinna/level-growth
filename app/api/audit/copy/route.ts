@@ -332,11 +332,22 @@ function analyze(html: string, url: string): CopyResult {
   const hasMetaDesc = metaFull || metaPartial;
   const h1Count  = $("h1").length;
   /* Texto directo del H1 sin hijos anidados (spans, em, strong, etc.) */
-  const h1Raw    = $("h1").first().text().trim();
-  const h1Direct = $("h1").first().clone().children().remove().end().text().trim();
-  const h1Text   = h1Direct.length >= 5 ? h1Direct : h1Raw;
-  const h1Len    = h1Text.length;
-  console.log(`[SEO-H1] raw="${h1Raw.slice(0, 80)}" direct="${h1Direct.slice(0, 80)}" using="${h1Text.slice(0, 80)}"`);
+  const h1Raw = $("h1").first().text().trim();
+
+  /* Extraer texto de cada hijo directo y unirlos con espacio */
+  const h1Parts: string[] = [];
+  $("h1").first().children().each((_, el) => {
+    const t = $(el).text().trim();
+    if (t) h1Parts.push(t);
+  });
+  const h1Reconstructed = h1Parts.join(" ").trim();
+
+  /* Usar el reconstruido si es más corto y tiene sentido */
+  const h1Text = (h1Reconstructed.length >= 5 && h1Reconstructed.length < h1Raw.length)
+    ? h1Reconstructed
+    : h1Raw;
+  const h1Len = h1Text.length;
+  console.log(`[SEO-H1] reconstructed="${h1Reconstructed.slice(0, 80)}" len=${h1Reconstructed.length} using="${h1Text.slice(0, 80)}"`);
 
   /* Fallback para sitios CSR: inferir H1 desde og:title o twitter:title */
   const ogTitle      = ($('meta[property="og:title"]').attr("content") ?? "").trim();
