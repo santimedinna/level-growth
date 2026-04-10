@@ -268,23 +268,43 @@ function analyze(html: string, url: string): CopyResult {
   const ctaDebugStrong: string[] = [];
   const ctaDebugWeak:   string[] = [];
 
-  $("button, a").each((_, el) => {
-    const text = $(el).text().toLowerCase().trim();
-    if (!text || text.length < 2) return;
-    if (STRONG_CTA_WORDS.some((w) => text.includes(w))) {
+  /* Selector ampliado: incluye role=button, inputs y atributos aria-label/title */
+  $("button, a, [role='button'], input[type='submit'], input[type='button']").each((_, el) => {
+    const text       = $(el).text().toLowerCase().trim();
+    const ariaLabel  = ($(el).attr("aria-label") ?? "").toLowerCase().trim();
+    const titleAttr  = ($(el).attr("title") ?? "").toLowerCase().trim();
+    const textToCheck = text || ariaLabel || titleAttr;
+    if (!textToCheck || textToCheck.length < 2) return;
+
+    if (STRONG_CTA_WORDS.some((w) => textToCheck.includes(w))) {
       strongCtaCount++;
-      allCtaTexts.add(text);
-      ctaDebugStrong.push(text.slice(0, 60));
-    } else if (WEAK_CTA_WORDS.some((w) => text.includes(w))) {
+      allCtaTexts.add(textToCheck);
+      ctaDebugStrong.push(textToCheck.slice(0, 60));
+    } else if (WEAK_CTA_WORDS.some((w) => textToCheck.includes(w))) {
       weakCtaCount++;
-      allCtaTexts.add(text);
-      ctaDebugWeak.push(text.slice(0, 60));
+      allCtaTexts.add(textToCheck);
+      ctaDebugWeak.push(textToCheck.slice(0, 60));
     }
   });
+
+  /* Fallback para sitios JS-rendered: segunda pasada sobre el HTML crudo */
+  const rawLower = html.toLowerCase();
+  const isLikelyJsRendered = bodyText.trim().split(/\s+/).length < 300 && $("script").length > 5;
+  let rawFallbackFound: string[] = [];
+  if (strongCtaCount === 0) {
+    const saasPatterns = [
+      "get started", "try for free", "start for free", "sign up",
+      "start free", "free trial", "get access", "book a demo",
+      "get started free", "try it free", "start now",
+    ];
+    rawFallbackFound = saasPatterns.filter((p) => rawLower.includes(p));
+    strongCtaCount += rawFallbackFound.length;
+  }
 
   console.log(`[audit/copy][CTA] ${url.slice(0, 70)}`);
   console.log(`  fuertes (${strongCtaCount}): ${JSON.stringify(ctaDebugStrong.slice(0, 10))}`);
   console.log(`  débiles (${weakCtaCount}):  ${JSON.stringify(ctaDebugWeak.slice(0, 10))}`);
+  console.log(`  bodyWords=${bodyText.trim().split(/\s+/).length} scripts=${$("script").length} jsRendered=${isLikelyJsRendered} rawFallback=${JSON.stringify(rawFallbackFound)}`);
 
   /* ── 2. Contacto disponible ──────────────────────────────────────── */
   const forms     = $("form");
@@ -477,6 +497,9 @@ function analyze(html: string, url: string): CopyResult {
 
   /* Email capture above-the-fold = conversión directa → score mínimo 9 */
   if (hasEmailCaptureCTA) ctaScore = Math.max(ctaScore, 9);
+
+  /* Sitio JS-rendered con score inflado por fallback raw → cap en 7 */
+  if (isLikelyJsRendered && ctaScore > 7) ctaScore = 7;
 
   ctaScore = clamp(ctaScore, 1, 10);
 

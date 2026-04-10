@@ -191,10 +191,10 @@ function getMessage(cat: Category, score: number, flags: MsgFlags): string {
 
 /* ─── Escenario basado en puntaje general ──── */
 function getScenario(overall: number, ctaScore: number, copyScore: number): Scenario {
-  /* Regla de eslabón más débil: si CTA o copy son críticos, nunca es "maquina" */
-  const weakLink = ctaScore < 4 || copyScore < 4;
-  if (overall >= 85 && !weakLink) return "maquina";
-  if (overall >= 70)              return "puerta-giratoria";
+  /* Regla de eslabón más débil: si CTA o copy no superan 5, nunca es "maquina" */
+  const weakLink = ctaScore < 5 || copyScore < 5;
+  if (overall >= 88 && !weakLink) return "maquina";
+  if (overall >= 75)              return "puerta-giratoria";
   if (overall >= 50)              return "doble-friccion";
   return                                 "abismo";
 }
