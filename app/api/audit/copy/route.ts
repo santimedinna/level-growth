@@ -330,11 +330,20 @@ function analyze(html: string, url: string): CopyResult {
   const metaFull    = metaLen >= 50 && metaLen <= 160;
   const metaPartial = metaLen > 10 && !metaFull;
   const hasMetaDesc = metaFull || metaPartial;
-  const h1Count     = $("h1").length;
-  const h1Text      = $("h1").first().text().trim();
-  const h1Len       = h1Text.length;
-  /* H1 válido: exactamente uno, entre 10 y 70 caracteres */
-  const h1Valid     = h1Count === 1 && h1Len >= 10 && h1Len <= 70;
+  const h1Count = $("h1").length;
+  /* Texto directo del H1 sin hijos anidados (spans, em, strong, etc.) */
+  const h1Text = ($("h1").first().clone().children().remove().end().text().trim())
+              || $("h1").first().text().trim();
+  const h1Len  = h1Text.length;
+
+  /* Fallback para sitios CSR: inferir H1 desde og:title o twitter:title */
+  const ogTitle      = ($('meta[property="og:title"]').attr("content") ?? "").trim();
+  const twitterTitle = ($('meta[name="twitter:title"]').attr("content") ?? "").trim();
+  const inferredH1   = ogTitle || twitterTitle;
+
+  /* H1 válido: exactamente uno con longitud 10-70, o inferido desde meta cuando h1Count===0 */
+  const h1Valid = (h1Count === 1 && h1Len >= 10 && h1Len <= 70)
+               || (h1Count === 0 && inferredH1.length >= 10 && inferredH1.length <= 70);
 
   const imgs        = $("img").toArray();
   const imgWithAlt  = imgs.filter((el) => ($(el).attr("alt") ?? "").trim().length > 0).length;
@@ -365,7 +374,7 @@ function analyze(html: string, url: string): CopyResult {
   console.log(`[audit/copy][SEO] ${url.slice(0, 70)}`);
   console.log(`  title  (>10c): ${hasTitle ? "✓" : "✗"} "${titleText.slice(0, 60)}"`);
   console.log(`  meta   (50-160c): ${metaFull ? "✓ full" : metaPartial ? "~ partial" : "✗"} "${metaContent.slice(0, 60)}" (${metaLen}c)`);
-  console.log(`  h1 count: ${h1Count} ${h1Valid ? "✓ válido" : h1Count === 1 ? `~ existe pero len=${h1Len}` : h1Count === 0 ? "✗ falta" : "✗ duplicado"}`);
+  console.log(`  h1 count: ${h1Count} ${h1Valid ? "✓ válido" : h1Count === 1 ? `~ existe pero len=${h1Len}` : h1Count === 0 ? `✗ falta${inferredH1 ? ` (inferred="${inferredH1.slice(0, 40)}")` : ""}` : "✗ duplicado"}`);
   console.log(`  imgs: ${imgs.length} total, ${imgWithAlt} con alt (${Math.round(altCoverage * 100)}%) ${altCoverage > 0.8 ? "✓" : "✗"}`);
   console.log(`  score: raw=${seoRaw}${capReasons.length ? ` → caps [${capReasons.join(", ")}]` : " → sin cap"} → final=${seoScore}`);
 
