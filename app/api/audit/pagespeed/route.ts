@@ -46,8 +46,10 @@ export async function GET(request: Request) {
   /* Caché */
   const cached = cache.get(url);
   if (cached && cached.expires > Date.now()) {
+    console.log(`[pagespeed][CACHE HIT] ${url.slice(0, 60)} → score=${cached.data.speedScore} source=${cached.data.source}`);
     return NextResponse.json(cached.data);
   }
+  console.log(`[pagespeed][CACHE MISS] ${url.slice(0, 60)}`);
 
   /* ── Intento 1: Google PageSpeed API ──── */
   const apiKey = process.env.PAGESPEED_API_KEY;
