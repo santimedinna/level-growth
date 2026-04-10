@@ -530,6 +530,8 @@ function analyze(html: string, url: string): CopyResult {
     };
   }
 
+  console.log(`[CTA-FINAL] ${url.slice(0, 50)} | bodyLen=${html.length} | bodyWords=${bodyText.trim().split(/\s+/).length} | strongRaw=${strongCtaCount} | weakRaw=${weakCtaCount} | ctaScore=${ctaScore} | hasWa=${hasWaLink} | forms=${forms.length}`);
+
   return result;
 }
 
