@@ -485,16 +485,16 @@ function analyze(html: string, url: string): CopyResult {
     if (!hasContact) ctaScore = Math.min(ctaScore, 2);
   }
 
-  /* ── 9. Ley de Hick (solo conversion, above-the-fold) ───────────── */
-  const aboveFoldEls    = $("body").children().slice(0, 3);
-  const uniqueAboveCtas = new Set<string>();
-  aboveFoldEls.find("button, a").each((_, el) => {
+  /* ── 9. Ley de Hick (solo conversion, excluyendo nav/header) ───────── */
+  const heroEls      = $("main, [class*='hero'], [class*='Hero'], section").first();
+  const ctaContainer = heroEls.length ? heroEls : $("body");
+  const uniqueHeroCtas = new Set<string>();
+  ctaContainer.find("button, a").not("nav a, header a, [role='navigation'] a").each((_, el) => {
     const text = $(el).text().toLowerCase().trim();
-    const isCta = STRONG_CTA_WORDS.some((w) => text.includes(w))
-               || WEAK_CTA_WORDS.some((w) => text.includes(w));
-    if (isCta && text.length > 1) uniqueAboveCtas.add(text);
+    const isStrong = STRONG_CTA_WORDS.some((w) => text.includes(w));
+    if (isStrong && text.length > 1 && text.length < 50) uniqueHeroCtas.add(text);
   });
-  const hicksLawViolation = pageType === "conversion" && uniqueAboveCtas.size > 4;
+  const hicksLawViolation = pageType === "conversion" && uniqueHeroCtas.size > 3;
   if (hicksLawViolation) ctaScore -= 1; // penalización -1
 
   /* Email capture above-the-fold = conversión directa → score mínimo 9 */
