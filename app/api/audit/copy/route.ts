@@ -347,16 +347,21 @@ function analyze(html: string, url: string): CopyResult {
     ? h1Reconstructed
     : h1Raw;
   const h1Len = h1Text.length;
-  console.log(`[SEO-H1] reconstructed="${h1Reconstructed.slice(0, 80)}" len=${h1Reconstructed.length} using="${h1Text.slice(0, 80)}"`);
 
   /* Fallback para sitios CSR: inferir H1 desde og:title o twitter:title */
   const ogTitle      = ($('meta[property="og:title"]').attr("content") ?? "").trim();
   const twitterTitle = ($('meta[name="twitter:title"]').attr("content") ?? "").trim();
   const inferredH1   = ogTitle || twitterTitle;
 
-  /* H1 válido: exactamente uno con longitud 10-70, o inferido desde meta cuando h1Count===0 */
-  const h1Valid = (h1Count === 1 && h1Len >= 10 && h1Len <= 70)
-               || (h1Count === 0 && inferredH1.length >= 10 && inferredH1.length <= 70);
+  /* Detectar H1 corrupto: demasiado largo o texto duplicado (ej: SSR que repite el contenido) */
+  const h1LooksCorrupt = h1Len > 100 || /(.{20,})\1/.test(h1Text);
+
+  /* H1 válido: uno con longitud 10-70 sin corrupción, inferido desde meta, o corrupto pero title existe */
+  const h1Valid = (h1Count === 1 && h1Len >= 10 && h1Len <= 70 && !h1LooksCorrupt)
+               || (h1Count === 0 && inferredH1.length >= 10 && inferredH1.length <= 70)
+               || (h1LooksCorrupt && hasTitle);  // H1 corrupto pero <title> existe = sitio bien estructurado
+
+  console.log(`[SEO-H1] reconstructed="${h1Reconstructed.slice(0, 80)}" len=${h1Len} corrupt=${h1LooksCorrupt} valid=${h1Valid}`);
 
   const imgs        = $("img").toArray();
   const imgWithAlt  = imgs.filter((el) => ($(el).attr("alt") ?? "").trim().length > 0).length;
