@@ -186,7 +186,55 @@ function getMessage(cat: Category, score: number, flags: MsgFlags): string {
     }
   }
 
+  /* ── Speed ───────────────────────────────────────────────────────── */
+  if (cat === "speed") {
+    if (getLevel(score) === "red")   return BASE_MESSAGES.speed.red;
+    if (getLevel(score) === "green") return BASE_MESSAGES.speed.green;
+    if (score <= 5) return "Tu sitio tiene problemas serios de velocidad, especialmente en mobile. La mayoría de los visitantes no esperan más de 3 segundos — si tu sitio tarda más, los perdés antes de que vean tu propuesta de valor.";
+    return BASE_MESSAGES.speed.yellow;
+  }
+
   return BASE_MESSAGES[cat][getLevel(score)];
+}
+
+/* ─── Estimación contextual de visitas y conversiones ──── */
+function estimateContext(
+  businessType: BusinessType,
+  pageType:     PageType,
+  seoScore:     number,
+  _overall:     number,
+): { visits: number; unitLabel: string; conversionRate: number } {
+  void pageType; // reservado para refinamiento futuro
+
+  const BASE_VISITS: Record<BusinessType, number> = {
+    ecommerce: 3000,
+    b2b:       600,
+    services:  350,
+    general:   400,
+  };
+
+  const seoMultiplier = seoScore >= 8 ? 2 : seoScore >= 6 ? 1.3 : 1;
+  const visits = Math.round(BASE_VISITS[businessType] * seoMultiplier / 100) * 100;
+
+  const CONVERSION_RATE: Record<BusinessType, number> = {
+    ecommerce: 0.02,
+    b2b:       0.02,
+    services:  0.04,
+    general:   0.03,
+  };
+
+  const UNIT_LABEL: Record<BusinessType, string> = {
+    ecommerce: "ventas potenciales",
+    b2b:       "oportunidades de negocio",
+    services:  "consultas",
+    general:   "contactos",
+  };
+
+  return {
+    visits,
+    unitLabel:      UNIT_LABEL[businessType],
+    conversionRate: CONVERSION_RATE[businessType],
+  };
 }
 
 /* ─── Escenario basado en puntaje general ──── */
@@ -590,15 +638,28 @@ export function AuditorTool() {
               {getScenarioMessage(scenario, lossRange)}
             </p>
 
-            {/* Pérdida estimada */}
-            {scenario !== "maquina" && (
-              <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
-                En un negocio con 500 visitas mensuales, eso son entre{" "}
-                <span className="text-white font-medium">{Math.round(500 * lossRange[0] / 100)}</span> y{" "}
-                <span className="text-white font-medium">{Math.round(500 * lossRange[1] / 100)}</span> clientes
-                potenciales que se van a la competencia cada mes.
-              </p>
-            )}
+            {/* Pérdida estimada contextual */}
+            {scenario !== "maquina" && results && (() => {
+              const { visits, unitLabel, conversionRate } = estimateContext(
+                results.businessType,
+                results.pageType,
+                results.seo,
+                overall,
+              );
+              const [lossMin, lossMax] = lossRange;
+              const baseConversions = Math.round(visits * conversionRate);
+              const lostMin = Math.round(baseConversions * lossMin / 100);
+              const lostMax = Math.round(baseConversions * lossMax / 100);
+              if (lostMin < 1) return null;
+              return (
+                <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
+                  En un sitio con tráfico similar al tuyo, eso representa entre{" "}
+                  <span className="text-white font-medium">{lostMin}</span> y{" "}
+                  <span className="text-white font-medium">{lostMax}</span>{" "}
+                  {unitLabel} perdidas por mes que podrían estar eligiéndote a vos.
+                </p>
+              );
+            })()}
 
             {/* Disclaimer */}
             <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[480px] mx-auto mb-8 leading-relaxed">
