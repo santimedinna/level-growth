@@ -243,6 +243,7 @@ function LossEstimate({ results, lossRange, overall }: {
   lossRange: [number, number];
   overall:   number;
 }) {
+  console.log('[LossEstimate] SE EJECUTÓ');
   const { visits, unitLabel, conversionRate } = estimateContext(
     results.businessType,
     results.pageType,
