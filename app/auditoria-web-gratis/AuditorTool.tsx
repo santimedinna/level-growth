@@ -651,6 +651,15 @@ export function AuditorTool() {
               const lostMin = Math.round(baseConversions * lossMin / 100);
               const lostMax = Math.round(baseConversions * lossMax / 100);
               if (lostMin < 1) return null;
+              console.log('[estimateContext]', {
+                businessType: results.businessType,
+                seoScore: results.seo,
+                visits,
+                baseConversions,
+                lostMin,
+                lostMax,
+                unitLabel,
+              });
               return (
                 <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
                   En un sitio con tráfico similar al tuyo, eso representa entre{" "}
