@@ -392,6 +392,7 @@ export function AuditorTool() {
     : 0;
   const scenario  = results ? getScenario(overall, results.cta, results.copy) : "maquina";
   const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
+  console.log('[SCENARIO]', { overall, scenario, ctaScore: results?.cta, copyScore: results?.copy });
 
   /* Rotar mensajes de carga */
   useEffect(() => {
