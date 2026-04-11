@@ -81,6 +81,14 @@ const STRONG_CTA_WORDS = [
   "hablar con", "quiero", "necesito", "agendar", "cotizar",
   "solicitar", "contratar",
   "empezar gratis", "registrate", "crear cuenta", "probar gratis",
+  /* Travel / ecommerce ES */
+  "buscar", "reservar", "comprar", "comprá",
+  "ver vuelos", "ver hoteles", "cotizar vuelo",
+  "agregar al carrito", "añadir al carrito",
+  "compra ahora", "ver oferta", "ver ofertas", "ver precio",
+  "pedir", "pedí", "encargar",
+  /* Travel / ecommerce EN */
+  "add to cart", "buy now", "shop now",
   /* EN */
   "get started", "sign up", "try free", "start now", "contact us",
   "get a quote", "book a demo", "book demo", "schedule", "request",
@@ -314,8 +322,13 @@ function analyze(html: string, url: string): CopyResult {
   const inputCount = forms.length > 0
     ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
     : 0;
-  const hasSignupLink = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']").length > 0;
-  const hasContact = hasWaLink || (forms.length > 0 && inputCount <= 5) || hasSignupLink || strongCtaCount >= 2;
+  const hasSignupLink  = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']").length > 0;
+  const hasSearchInput = $('input[type="search"], input[placeholder*="destino"], input[placeholder*="buscar"], input[placeholder*="search"], input[placeholder*="donde"]').length > 0;
+  const hasContact = hasWaLink
+                  || (forms.length > 0 && inputCount <= 5)
+                  || hasSignupLink
+                  || strongCtaCount >= 2
+                  || hasSearchInput; // buscadores = mecanismo de conversión
 
   /* ── 3. Tipo de página y de negocio ──────────────────────────────── */
   const { type: pageType, scores: pageTypeScores } = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
