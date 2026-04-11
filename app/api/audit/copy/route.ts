@@ -393,6 +393,12 @@ function analyze(html: string, url: string): CopyResult {
   if (!hasMetaDesc &&  effectiveH1) seoScore = Math.min(seoScore, 6); // solo falta meta desc
   /* Alt coverage insuficiente: cap en 7 (solo imágenes, no bloquea completamente) */
   if (altCoverage < 0.8) seoScore = Math.min(seoScore, 7);
+  /* SPA sin contenido estático: el SEO no se puede evaluar correctamente */
+  const isSPA = bodyText.trim().split(/\s+/).length < 150 && $("script").length > 3;
+  if (isSPA) {
+    seoScore = Math.min(seoScore, 4);
+    console.log(`[SEO] SPA detectado — cap en 4`);
+  }
   seoScore = clamp(seoScore, 1, 10);
 
   /* Log de debug para SEO — visible en consola del servidor */
