@@ -392,7 +392,7 @@ export function AuditorTool() {
     : 0;
   const scenario  = results ? getScenario(overall, results.cta, results.copy) : "maquina";
   const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
-  console.log('[SCENARIO]', { overall, scenario, ctaScore: results?.cta, copyScore: results?.copy });
+  console.log('[SCENARIO]', { overall, scenario, ctaScore: results?.cta, copyScore: results?.copy, hasResults: !!results });
 
   /* Rotar mensajes de carga */
   useEffect(() => {
@@ -672,7 +672,7 @@ export function AuditorTool() {
             </p>
 
             {/* Pérdida estimada contextual */}
-            {scenario !== "maquina" && results && (
+            {results && scenario !== "maquina" && (
               <LossEstimate results={results} lossRange={lossRange} overall={overall} />
             )}
 
