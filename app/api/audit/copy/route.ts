@@ -283,6 +283,7 @@ function analyze(html: string, url: string): CopyResult {
     const titleAttr  = ($(el).attr("title") ?? "").toLowerCase().trim();
     const textToCheck = text || ariaLabel || titleAttr;
     if (!textToCheck || textToCheck.length < 3 || textToCheck.length > 80) return;
+    if (textToCheck.includes("powered by")) return; // excluir atribuciones de plataforma
 
     if (STRONG_CTA_WORDS.some((w) => textToCheck.includes(w))) {
       strongCtaCount++;
@@ -322,7 +323,11 @@ function analyze(html: string, url: string): CopyResult {
   const inputCount = forms.length > 0
     ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
     : 0;
-  const hasSignupLink         = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']").length > 0;
+  const hasSignupLink         = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']")
+    .filter((_, el) => {
+      const href = $(el).attr("href") ?? "";
+      return !href.includes("pacientes") && !href.includes("portal") && !href.includes("login") && !href.includes("ingresar");
+    }).length > 0;
   const hasSearchInput        = $('input[type="search"], input[placeholder*="destino"], input[placeholder*="buscar"], input[placeholder*="search"], input[placeholder*="donde"]').length > 0;
   const isTravelOrMarketplace = /vuelo|hotel|paquete|reserva|destino|flight|booking|travel|marketplace|tienda|shop|carrito/i.test(bodyText);
   const hasContact = hasWaLink
