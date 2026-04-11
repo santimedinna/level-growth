@@ -237,6 +237,37 @@ function estimateContext(
   };
 }
 
+/* ─── Componente pérdida estimada ────────── */
+function LossEstimate({ results, lossRange, overall }: {
+  results:   AuditResults;
+  lossRange: [number, number];
+  overall:   number;
+}) {
+  const { visits, unitLabel, conversionRate } = estimateContext(
+    results.businessType,
+    results.pageType,
+    results.seo,
+    overall,
+  );
+  const [lossMin, lossMax] = lossRange;
+  const baseConversions = Math.round(visits * conversionRate);
+  const lostMin = Math.round(baseConversions * lossMin / 100);
+  const lostMax = Math.round(baseConversions * lossMax / 100);
+
+  console.log('[LossEstimate]', { businessType: results.businessType, visits, lostMin, lostMax, unitLabel });
+
+  if (lostMin < 1) return null;
+
+  return (
+    <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
+      En un sitio con tráfico similar al tuyo, eso representa entre{" "}
+      <span className="text-white font-medium">{lostMin}</span> y{" "}
+      <span className="text-white font-medium">{lostMax}</span>{" "}
+      {unitLabel} perdidas por mes que podrían estar eligiéndote a vos.
+    </p>
+  );
+}
+
 /* ─── Escenario basado en puntaje general ──── */
 function getScenario(overall: number, ctaScore: number, copyScore: number): Scenario {
   /* Regla de eslabón más débil: si CTA o copy no superan 5, nunca es "maquina" */
@@ -639,36 +670,9 @@ export function AuditorTool() {
             </p>
 
             {/* Pérdida estimada contextual */}
-            {scenario !== "maquina" && results && (() => {
-              const { visits, unitLabel, conversionRate } = estimateContext(
-                results.businessType,
-                results.pageType,
-                results.seo,
-                overall,
-              );
-              const [lossMin, lossMax] = lossRange;
-              const baseConversions = Math.round(visits * conversionRate);
-              const lostMin = Math.round(baseConversions * lossMin / 100);
-              const lostMax = Math.round(baseConversions * lossMax / 100);
-              if (lostMin < 1) return null;
-              console.log('[estimateContext]', {
-                businessType: results.businessType,
-                seoScore: results.seo,
-                visits,
-                baseConversions,
-                lostMin,
-                lostMax,
-                unitLabel,
-              });
-              return (
-                <p className="font-body text-sm text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-2">
-                  En un sitio con tráfico similar al tuyo, eso representa entre{" "}
-                  <span className="text-white font-medium">{lostMin}</span> y{" "}
-                  <span className="text-white font-medium">{lostMax}</span>{" "}
-                  {unitLabel} perdidas por mes que podrían estar eligiéndote a vos.
-                </p>
-              );
-            })()}
+            {scenario !== "maquina" && results && (
+              <LossEstimate results={results} lossRange={lossRange} overall={overall} />
+            )}
 
             {/* Disclaimer */}
             <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[480px] mx-auto mb-8 leading-relaxed">
