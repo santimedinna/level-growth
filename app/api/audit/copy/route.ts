@@ -322,13 +322,15 @@ function analyze(html: string, url: string): CopyResult {
   const inputCount = forms.length > 0
     ? forms.first().find("input:not([type='hidden']):not([type='submit'])").length
     : 0;
-  const hasSignupLink  = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']").length > 0;
-  const hasSearchInput = $('input[type="search"], input[placeholder*="destino"], input[placeholder*="buscar"], input[placeholder*="search"], input[placeholder*="donde"]').length > 0;
+  const hasSignupLink         = $("a[href*='signup'], a[href*='sign-up'], a[href*='register'], a[href*='get-started'], a[href*='start'], a[href*='trial'], a[href*='/join']").length > 0;
+  const hasSearchInput        = $('input[type="search"], input[placeholder*="destino"], input[placeholder*="buscar"], input[placeholder*="search"], input[placeholder*="donde"]').length > 0;
+  const isTravelOrMarketplace = /vuelo|hotel|paquete|reserva|destino|flight|booking|travel|marketplace|tienda|shop|carrito/i.test(bodyText);
   const hasContact = hasWaLink
                   || (forms.length > 0 && inputCount <= 5)
                   || hasSignupLink
                   || strongCtaCount >= 2
-                  || hasSearchInput; // buscadores = mecanismo de conversión
+                  || hasSearchInput  // buscadores = mecanismo de conversión
+                  || (isTravelOrMarketplace && bodyText.trim().split(/\s+/).length > 500); // portal con contenido real
 
   /* ── 3. Tipo de página y de negocio ──────────────────────────────── */
   const { type: pageType, scores: pageTypeScores } = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
