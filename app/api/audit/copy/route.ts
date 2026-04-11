@@ -556,7 +556,7 @@ function analyze(html: string, url: string): CopyResult {
   /* Sitio JS-rendered con score inflado por fallback raw → cap en 7 */
   if (isLikelyJsRendered && ctaScore > 7) ctaScore = 7;
 
-  console.log(`[CTA-PATH] effectiveStrong=${effectiveStrong} weakCta=${weakCtaCount} forms=${forms.length} inputCount=${inputCount} hasContact=${hasContact} hasSignup=${hasSignupLink} hicksViolation=${hicksLawViolation} → ctaScore=${ctaScore}`);
+  console.log(`[CTA-PATH] effectiveStrong=${effectiveStrong} weakCta=${weakCtaCount} forms=${forms.length} inputCount=${inputCount} hasContact=${hasContact} hasSignup=${hasSignupLink} hasSearch=${hasSearchInput} hicksViolation=${hicksLawViolation} → ctaScore=${ctaScore}`);
 
   ctaScore = clamp(ctaScore, 1, 10);
 
