@@ -167,6 +167,17 @@ const SERVICES_WORDS  = [
   "consultoría", "consultoria", "asesoría", "asesoria", "estrategia", "agencia",
   "consulting", "advisory", "strategy", "agency", "marketing",
 ];
+const HEALTH_WORDS    = [
+  "odontología", "odontologia", "clínica", "clinica", "médico", "medico",
+  "salud", "consulta médica", "consulta medica", "turno", "paciente", "tratamiento",
+  "dental", "ortodoncia", "implante", "psicólogo", "psicologo",
+  "terapeuta", "nutrición", "nutricion", "ginecología", "ginecologia",
+];
+const LEGAL_WORDS     = [
+  "abogado", "estudio jurídico", "estudio juridico", "divorcio",
+  "derecho", "asesoría legal", "asesoria legal", "demanda", "juicio",
+  "familia", "sucesión", "sucesion", "penal", "civil", "notaría", "notaria",
+];
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -191,13 +202,20 @@ function clamp(n: number, min: number, max: number): number {
 
 /* ─── Tipo de negocio ────────────────────────────────────────────────── */
 function detectBusinessType(bodyLower: string): BusinessType {
+  const health = countOccurrences(bodyLower, HEALTH_WORDS);
+  const legal  = countOccurrences(bodyLower, LEGAL_WORDS);
+
+  /* Salud y legal son siempre "services" — evita que ecommerce les gane por carrito/pago */
+  if (health >= 2) return "services";
+  if (legal  >= 2) return "services";
+
   const b2b  = countOccurrences(bodyLower, B2B_WORDS);
   const ecom = countOccurrences(bodyLower, ECOMMERCE_WORDS);
   const svc  = countOccurrences(bodyLower, SERVICES_WORDS);
   const max  = Math.max(b2b, ecom, svc);
-  if (max < 2)                return "general";
+  if (max < 2)                   return "general";
   if (b2b >= ecom && b2b >= svc) return "b2b";
-  if (ecom >= svc)            return "ecommerce";
+  if (ecom >= svc)               return "ecommerce";
   return "services";
 }
 
@@ -340,6 +358,7 @@ function analyze(html: string, url: string): CopyResult {
   /* ── 3. Tipo de página y de negocio ──────────────────────────────── */
   const { type: pageType, scores: pageTypeScores } = detectPageType($, bodyText, bodyLower, url, allCtaTexts.size);
   const businessType = detectBusinessType(bodyLower);
+  console.log(`[audit/copy][TYPE] pageType=${pageType} businessType=${businessType}`);
 
   /* ── 4. SEO score (técnico puro) ─────────────────────────────────── */
   const titleText   = $("title").text().trim();
