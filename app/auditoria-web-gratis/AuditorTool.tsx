@@ -279,13 +279,22 @@ function getScenario(overall: number, ctaScore: number, copyScore: number): Scen
   return                                 "abismo";
 }
 
-function getLossRange(scenario: Scenario): [number, number] {
-  switch (scenario) {
-    case "maquina":          return [0,  10];
-    case "puerta-giratoria": return [30, 50];
-    case "doble-friccion":   return [50, 70];
-    case "abismo":           return [80, 95];
-  }
+function getLossRange(scenario: Scenario, overall: number): [number, number] {
+  const ranges: Record<Scenario, { min: number; max: number; scoreMin: number; scoreMax: number }> = {
+    "maquina":          { min: 0,  max: 5,  scoreMin: 88, scoreMax: 100 },
+    "puerta-giratoria": { min: 10, max: 20, scoreMin: 70, scoreMax: 87  },
+    "doble-friccion":   { min: 20, max: 35, scoreMin: 50, scoreMax: 69  },
+    "abismo":           { min: 35, max: 55, scoreMin: 0,  scoreMax: 49  },
+  };
+
+  const { min, max, scoreMin, scoreMax } = ranges[scenario];
+  const ratio = 1 - (overall - scoreMin) / (scoreMax - scoreMin);
+  const lossPoint = min + ratio * (max - min);
+
+  return [
+    Math.max(min, Math.round(lossPoint - 2)),
+    Math.min(max, Math.round(lossPoint + 2)),
+  ];
 }
 
 const SCENARIO_DATA: Record<Scenario, { name: string; color: string }> = {
@@ -391,7 +400,7 @@ export function AuditorTool() {
       : Math.round(((results.seo + results.copy + results.cta) / 30) * 100)
     : 0;
   const scenario  = results ? getScenario(overall, results.cta, results.copy) : "maquina";
-  const lossRange = results ? getLossRange(scenario) : [0, 10] as [number, number];
+  const lossRange = results ? getLossRange(scenario, overall) : [0, 5] as [number, number];
   console.log('[SCENARIO]', { overall, scenario, ctaScore: results?.cta, copyScore: results?.copy, hasResults: !!results });
 
   /* Rotar mensajes de carga */
