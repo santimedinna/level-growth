@@ -94,10 +94,7 @@ export function Hero() {
 
         {/* H1 — sin animación para que sea el LCP inmediato */}
         <h1 className="font-display font-bold text-[clamp(2rem,5vw,3.2rem)] leading-tight text-lg-text mb-6 max-w-[700px] mx-auto">
-          Tu negocio merece un funnel
-          <br />
-          que{" "}
-          <span className="gradient-text">realmente convierta</span>
+          Tu negocio merece una web que realmente venda
         </h1>
 
         {/* Subtítulo */}
@@ -105,8 +102,7 @@ export function Hero() {
           style={anim("0.1s")}
           className="font-body text-[1.125rem] text-lg-text-secondary leading-[1.7] max-w-[560px] mx-auto mb-10"
         >
-          Auditamos tu sitio web y tu publicidad. Te mostramos exactamente
-          dónde perdés clientes — y lo solucionamos.
+          Descubrí exactamente dónde tu web pierde clientes — y cómo solucionarlo.
         </p>
 
         {/* CTAs */}
@@ -114,15 +110,16 @@ export function Hero() {
           style={anim("0.22s")}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
         >
+          <Button href="/auditoria-web-gratis" size="lg">
+            Auditá tu web gratis →
+          </Button>
           <Button
             href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
             external
+            variant="secondary"
             size="lg"
           >
-            Quiero mi auditoría gratis →
-          </Button>
-          <Button href="#caso-de-exito" variant="secondary" size="lg">
-            Ver casos de éxito
+            Hablá con un especialista
           </Button>
         </div>
 

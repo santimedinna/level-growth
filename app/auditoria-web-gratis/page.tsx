@@ -36,7 +36,7 @@ export default function AuditoriaWebPage() {
 
           <p className="font-body text-[1.05rem] text-[#7A8FA6] leading-[1.7] max-w-[520px] mx-auto">
             Ingresá la URL de tu sitio y en menos de 60 segundos te mostramos exactamente
-            qué está frenando tus ventas — sin tecnicismos, en lenguaje de negocio.
+            qué está frenando tus ventas, sin tecnicismos, en lenguaje de negocio.
           </p>
         </div>
 
