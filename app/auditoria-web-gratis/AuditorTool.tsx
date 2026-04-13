@@ -705,32 +705,28 @@ export function AuditorTool() {
             </div>
 
             {/* Mensaje del escenario */}
-            <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-3">
+            <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-6">
               {results && getScenarioMessage(scenario, results)}
             </p>
 
-            {/* Pérdida estimada contextual */}
-            {results && scenario !== "maquina" && (
-              <LossEstimate results={results} lossRange={lossRange} overall={overall} />
-            )}
-
-            {/* Disclaimer */}
-            <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[480px] mx-auto mb-8 leading-relaxed">
-              Este análisis es orientativo y se basa en indicadores técnicos públicos de tu sitio, aplicando benchmarks de Google, Amazon, Nielsen Norman Group y Robert Cialdini. No reemplaza una auditoría profesional completa que considere tu modelo de negocio, tus canales de venta y tus datos reales de conversión.
-            </p>
-
+            {/* CTA */}
             <a
               href={WA_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 font-body font-medium text-base text-white px-8 py-4 rounded-lg transition-all duration-200 hover:brightness-110 active:brightness-95 mb-4"
+              className="inline-flex items-center justify-center gap-2 font-body font-medium text-base text-white px-8 py-4 rounded-lg transition-all duration-200 hover:brightness-110 active:brightness-95 mb-3"
               style={{ background: "linear-gradient(135deg, #2BA86A, #1a7a4e)", boxShadow: "0 0 28px rgba(43,168,106,0.4)" }}
             >
               Quiero recuperar esos clientes →
             </a>
 
-            <p className="font-body text-xs text-[#4A6070]">
+            <p className="font-body text-xs text-[#4A6070] mb-6">
               Un especialista analiza tu caso en menos de 24hs. Sin costo.
+            </p>
+
+            {/* Disclaimer */}
+            <p className="font-body text-[0.68rem] text-[#4A6070] max-w-[480px] mx-auto leading-relaxed">
+              Este análisis es orientativo y se basa en indicadores técnicos públicos de tu sitio, aplicando benchmarks de Google, Amazon, Nielsen Norman Group y Robert Cialdini. No reemplaza una auditoría profesional completa que considere tu modelo de negocio, tus canales de venta y tus datos reales de conversión.
             </p>
           </motion.div>
 
