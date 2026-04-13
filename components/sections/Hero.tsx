@@ -54,9 +54,9 @@ function CountUp({ target, prefix = "", suffix = "", decimals = 0 }: CountUpProp
 
 /* ─── Datos de métricas ───────────────────── */
 const metrics = [
-  { prefix: "+", target: 40,   suffix: "%",  decimals: 0, label: "conversión promedio" },
-  {              target: 4.75, suffix: "x",  decimals: 2, label: "retorno en ads"       },
-  {              target: 48,   suffix: "hs", decimals: 0, label: "primer reporte"        },
+  { prefix: "+", target: 40,   suffix: "%", decimals: 0, label: "conversión con funnel optimizado" },
+  {              target: 4.75, suffix: "x", decimals: 2, label: "retorno promedio en ads"           },
+  {              target: 60,   suffix: "s", decimals: 0, label: "auditoría web instantánea"         },
 ];
 
 /* ─── Helper: estilo de animación CSS ────── */
@@ -138,7 +138,7 @@ export function Hero() {
                     i > 0 && "border-l border-white/[0.08]",
                   ].filter(Boolean).join(" ")}
                 >
-                  <p className="font-mono text-[clamp(2rem,4vw,3.5rem)] font-medium gradient-text leading-none mb-1">
+                  <p className="font-mono text-[clamp(2rem,4vw,3.5rem)] font-medium gradient-text leading-none mb-1 whitespace-nowrap">
                     <CountUp {...m} />
                   </p>
                   <p className="font-body text-[0.75rem] text-lg-text-muted tracking-[0.08em] uppercase">

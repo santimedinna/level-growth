@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
-import { ConversionBarChart } from "@/components/charts/ConversionBarChart";
 
 /* ─── Animaciones ─────────────────────────── */
 const fadeUp = {
@@ -85,8 +84,6 @@ export function Pain() {
           en cada etapa del proceso. Por eso auditamos el funnel completo.
         </motion.p>
 
-        {/* Gráfico de tasa de conversión */}
-        <ConversionBarChart />
 
       </div>
     </section>
