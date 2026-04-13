@@ -78,7 +78,7 @@ export function AuditoriaCTA() {
             </form>
 
             <p className="font-body text-[0.8rem] text-[#4A6070]">
-              Ya auditamos más de 200 sitios. El análisis tarda menos de 60 segundos.
+              Analizamos tu sitio en menos de 60 segundos.
             </p>
           </motion.div>
 
