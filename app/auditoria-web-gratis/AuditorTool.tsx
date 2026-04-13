@@ -304,18 +304,47 @@ const SCENARIO_DATA: Record<Scenario, { name: string; color: string }> = {
   "abismo":           { name: "El Abismo",             color: "#EF4444" },
 };
 
-function getScenarioMessage(scenario: Scenario, lossRange: [number, number]): string {
-  const [min, max] = lossRange;
-  switch (scenario) {
-    case "maquina":
-      return "Tu sitio tiene buenas bases técnicas y un mensaje claro. El margen de mejora existe pero no estás perdiendo clientes de forma significativa por estos factores. El foco ahora debería estar en optimización fina y en el proceso de ventas post-contacto.";
-    case "puerta-giratoria":
-      return `Tu sitio está bien encaminado pero hay oportunidades claras de mejora en uno o más puntos del funnel. El eslabón más débil es el que más cuesta — identificarlo y resolverlo puede recuperar entre el ${min} y el ${max}% de las conversiones que hoy se pierden.`;
-    case "doble-friccion":
-      return `Tu sitio tiene fricción en más de un punto del funnel. Ningún problema individual es crítico por sí solo, pero juntos generan una pérdida estimada del ${min}-${max}% de tus conversiones posibles. Un especialista puede mostrarte exactamente por dónde arrancar para el mayor impacto.`;
-    case "abismo":
-      return "Tu sitio está perdiendo la gran mayoría de su potencial de conversión. Los problemas son sistémicos — velocidad, mensaje y llamadas a la acción trabajan en contra del visitante. Con mejoras coordinadas en estos frentes podés multiplicar tus resultados actuales de forma significativa.";
-  }
+function getWeakLink(results: AuditResults): "speed" | "seo" | "copy" | "cta" {
+  const scores = {
+    speed: results.speed ?? 5,
+    seo:   results.seo,
+    copy:  results.copy,
+    cta:   results.cta,
+  };
+  return Object.entries(scores).sort((a, b) => a[1] - b[1])[0][0] as "speed" | "seo" | "copy" | "cta";
+}
+
+function getScenarioMessage(scenario: Scenario, results: AuditResults): string {
+  const weak = getWeakLink(results);
+
+  const messages: Record<Scenario, Record<string, string>> = {
+    "maquina": {
+      speed: "Tu sitio tiene bases sólidas y no estás perdiendo clientes de forma significativa. Sin embargo, en mercados competitivos, mejorar la velocidad de carga puede darte ese margen extra de conversiones que la competencia no tiene, esto define quién se queda con el clic. Los detalles son los que separan un buen sitio de uno que vende solo.",
+      seo:   "Tu sitio tiene bases sólidas y no estás perdiendo clientes de forma significativa. Sin embargo, mejorar tu visibilidad orgánica es capturar demanda que hoy va a la competencia simplemente porque aparecen antes que vos. Con el SEO afinado, te convertís en la referencia indiscutida cuando tu cliente tiene la necesidad.",
+      copy:  "Tu sitio tiene bases sólidas y no estás perdiendo clientes de forma significativa. Sin embargo, afinar el mensaje es lo que transforma un interesado en un cliente decidido. Un copy de alto nivel no solo vende más, precalifica al usuario. Un visitante convencido negocia menos el precio y confía más en tu proceso. Es la diferencia entre despachar y asesorar.",
+      cta:   "Tu sitio tiene bases sólidas y no estás perdiendo clientes de forma significativa. Sin embargo, fortalecer tus llamadas a la acción con cierres de precisión puede eliminar ese 'lo pienso y vuelvo' que mata tantas ventas. Ese último empujón es la diferencia entre un interesado y un cliente.",
+    },
+    "puerta-giratoria": {
+      speed: "Tu sitio está bien encaminado pero tiene una fuga clara, la velocidad está filtrando visitantes antes de que lleguen a ver lo que ofrecés. Estás perdiendo entre el 10 y el 20% de conversiones antes de que el juego empiece. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+      seo:   "Tu sitio está bien encaminado pero tiene una fuga clara, no estás capturando todo el tráfico que podrías. Cada búsqueda relevante donde no aparecés es un cliente que va directo a quien sí aparece. Estás perdiendo entre el 10 y el 20% de tu mercado disponible. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+      copy:  "Tu sitio está bien encaminado pero tiene una fuga clara, el visitante llega, lee, y no termina de entender por qué elegirte. Esa duda no resuelta es suficiente para irse a buscar otras opciones. Estás perdiendo entre el 10 y el 20% de conversiones en el momento más crítico. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+      cta:   "Tu sitio está bien encaminado pero tiene una fuga clara, en el momento de decisión no les da el empujón necesario para actuar ahora. Se van a pensarlo y no vuelven. Estás perdiendo entre el 10 y el 20% de conversiones en el último metro. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+    },
+    "doble-friccion": {
+      speed: "Tu sitio tiene más de un punto de fuga, y el más urgente es la velocidad. Los visitantes se van antes de ver tu propuesta de valor, y los que aguantan encuentran nuevos obstáculos en el camino. Estás perdiendo entre el 20 y el 35% de conversiones que ya tenías al alcance. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+      seo:   "Tu sitio tiene más de un punto de fuga, y uno de ellos es invisible: no estás apareciendo frente a todos los que deberían encontrarte. Los que llegan enfrentan obstáculos adicionales. Estás perdiendo entre el 20 y el 35% de tu potencial por ambos lados. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+      copy:  "Tu sitio tiene más de un punto de fuga, el más crítico es el mensaje. No termina de comunicar por qué elegirte, y un visitante que duda en los primeros segundos no espera para convencerse. Estás perdiendo entre el 20 y el 35% de conversiones antes de que la conversación empiece. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+      cta:   "Tu sitio tiene más de un punto de fuga, el que más duele está al final. El visitante llega, evalúa, y se va sin actuar porque nada lo empujó a decidir ahora. Estás perdiendo entre el 20 y el 35% de conversiones en el último metro. Corregir esto es la forma más rápida de aumentar tus resultados sin cambiar tu estrategia de captación.",
+    },
+    "abismo": {
+      speed: "Tu sitio está trabajando en contra tuyo. Cada visitante que llega enfrenta velocidad, mensajes y botones que generan desconfianza antes de que pueda evaluar si tu servicio es lo que necesita. No es un problema de tráfico, es que el sitio está descartando activamente a clientes que ya te encontraron. Estás perdiendo entre el 35 y el 55% de tus conversiones posibles. Eso es lo más costoso que puede pasarle a un negocio.",
+      seo:   "Tu sitio está trabajando en contra tuyo. Cada visitante que llega enfrenta velocidad, mensajes y botones que generan desconfianza antes de que pueda evaluar si tu servicio es lo que necesita. No es un problema de tráfico, es que el sitio está descartando activamente a clientes que ya te encontraron. Estás perdiendo entre el 35 y el 55% de tus conversiones posibles. Eso es lo más costoso que puede pasarle a un negocio.",
+      copy:  "Tu sitio está trabajando en contra tuyo. Cada visitante que llega enfrenta velocidad, mensajes y botones que generan desconfianza antes de que pueda evaluar si tu servicio es lo que necesita. No es un problema de tráfico, es que el sitio está descartando activamente a clientes que ya te encontraron. Estás perdiendo entre el 35 y el 55% de tus conversiones posibles. Eso es lo más costoso que puede pasarle a un negocio.",
+      cta:   "Tu sitio está trabajando en contra tuyo. Cada visitante que llega enfrenta velocidad, mensajes y botones que generan desconfianza antes de que pueda evaluar si tu servicio es lo que necesita. No es un problema de tráfico, es que el sitio está descartando activamente a clientes que ya te encontraron. Estás perdiendo entre el 35 y el 55% de tus conversiones posibles. Eso es lo más costoso que puede pasarle a un negocio.",
+    },
+  };
+
+  return messages[scenario][weak];
 }
 
 /* ─── CountUp ─────────────────────────────── */
@@ -677,7 +706,7 @@ export function AuditorTool() {
 
             {/* Mensaje del escenario */}
             <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] max-w-[500px] mx-auto mb-3">
-              {getScenarioMessage(scenario, lossRange)}
+              {results && getScenarioMessage(scenario, results)}
             </p>
 
             {/* Pérdida estimada contextual */}
