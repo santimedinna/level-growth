@@ -14,12 +14,6 @@ const staggerContainer: Variants = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
 
-/* ─── Métricas ────────────────────────────── */
-const STATS = [
-  { value: "+40",  label: "sitios auditados"              },
-  { value: "$0",   label: "cobrados por esta herramienta" },
-];
-
 /* ─── Componente ──────────────────────────── */
 export function Santiago() {
   return (
@@ -37,7 +31,7 @@ export function Santiago() {
             <div
               className="w-full flex flex-col items-center justify-center gap-3 rounded-xl"
               style={{
-                aspectRatio:     "3 / 4",
+                aspectRatio:     "4 / 5",
                 background:      "#0D1221",
                 border:          "1px solid rgba(63,200,122,0.25)",
                 borderRadius:    "12px",
@@ -78,23 +72,6 @@ export function Santiago() {
               suposiciones, no de tendencias del momento.
             </motion.p>
 
-            {/* Métricas */}
-            <motion.div variants={fadeUp} className="grid grid-cols-2 gap-4 mt-2">
-              {STATS.map(({ value, label }) => (
-                <div
-                  key={label}
-                  className="rounded-xl p-4 border border-white/[0.08]"
-                  style={{ background: "#0D1221" }}
-                >
-                  <p className="font-mono font-medium text-[1.8rem] leading-none text-white mb-1">
-                    {value}
-                  </p>
-                  <p className="font-body text-[0.75rem] text-lg-text-muted leading-snug">
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </motion.div>
           </motion.div>
         </motion.div>
       </div>
