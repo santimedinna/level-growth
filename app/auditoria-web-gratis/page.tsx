@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { AuditorTool } from "./AuditorTool";
 
 export const metadata: Metadata = {
@@ -41,7 +42,9 @@ export default function AuditoriaWebPage() {
         </div>
 
         {/* Herramienta interactiva */}
-        <AuditorTool />
+        <Suspense>
+          <AuditorTool />
+        </Suspense>
 
         {/* Nota al pie */}
         <p className="font-body text-xs text-[#4A6070] text-center mt-10">
