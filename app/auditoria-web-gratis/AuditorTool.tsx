@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { FormFriction, PageType, BusinessType, PageTypeScores } from "@/app/api/audit/copy/route";
 
@@ -415,6 +416,7 @@ const PAGE_TYPE_LABEL: Record<string, string> = {
 
 /* ─── Componente principal ────────────────── */
 export function AuditorTool() {
+  const searchParams = useSearchParams();
   const [step,     setStep]     = useState<Step>("input");
   const [url,      setUrl]      = useState("");
   const [error,    setError]    = useState("");
@@ -431,6 +433,49 @@ export function AuditorTool() {
   const scenario  = results ? getScenario(overall, results.cta, results.copy) : "maquina";
   const lossRange = results ? getLossRange(scenario, overall) : [0, 5] as [number, number];
   console.log('[SCENARIO]', { overall, scenario, ctaScore: results?.cta, copyScore: results?.copy, hasResults: !!results });
+
+  /* Precargar URL desde query string y arrancar análisis */
+  useEffect(() => {
+    const paramUrl = searchParams.get("url");
+    if (!paramUrl) return;
+    setUrl(paramUrl);
+    const normalized = paramUrl.startsWith("http") ? paramUrl : `https://${paramUrl}`;
+    try { new URL(normalized); } catch { return; }
+    setError("");
+    setStep("loading");
+    setMsgIdx(0);
+    const encoded = encodeURIComponent(normalized);
+    Promise.all([
+      fetch(`/api/audit/pagespeed?url=${encoded}`),
+      fetch(`/api/audit/copy?url=${encoded}`),
+    ]).then(async ([psRes, copyRes]) => {
+      const ps   = await psRes.json();
+      const copy = await copyRes.json();
+      setResults({
+        speed:              ps.speedScore          ?? null,
+        seo:                copy.seoScore          ?? 4,
+        copy:               copy.copyScore         ?? 4,
+        cta:                copy.ctaScore          ?? 4,
+        lcpMs:              ps.lcpMs               ?? null,
+        hasSocialProof:     copy.hasSocialProof    ?? false,
+        hicksLawViolation:  copy.hicksLawViolation ?? false,
+        formFriction:       copy.formFriction      ?? "none",
+        pageType:           copy.pageType          ?? "conversion",
+        businessType:       copy.businessType      ?? "general",
+        hasGenericH1:       copy.hasGenericH1      ?? false,
+        hasFeatureBias:     copy.hasFeatureBias    ?? false,
+        hasUnsubstantiated: copy.hasUnsubstantiated ?? false,
+        _debug:             copy._debug,
+      });
+      setProgress(1);
+      setTimeout(() => setStep("results"), 400);
+    }).catch((err) => {
+      console.error("[audit][autostart]", err);
+      setError("No pudimos conectarnos. Verificá tu conexión e intentá de nuevo.");
+      setStep("input");
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* Rotar mensajes de carga */
   useEffect(() => {

@@ -94,7 +94,10 @@ export function Hero() {
 
         {/* H1 — sin animación para que sea el LCP inmediato */}
         <h1 className="font-display font-bold text-[clamp(2rem,5vw,3.2rem)] leading-tight text-lg-text mb-6 max-w-[700px] mx-auto">
-          Tu negocio merece una web que realmente venda
+        Tu negocio merece una web{" "}
+        <span className="bg-gradient-to-r from-[#3FC87A] to-[#4A9EE0] bg-clip-text text-transparent">
+          que realmente venda
+        </span>
         </h1>
 
         {/* Subtítulo */}

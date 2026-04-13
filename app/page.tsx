@@ -13,8 +13,8 @@ const Pain = dynamic(() =>
   import("@/components/sections/Pain").then(m => ({ default: m.Pain }))
 );
 
-const FunnelComparison = dynamic(() =>
-  import("@/components/sections/FunnelComparison").then(m => ({ default: m.FunnelComparison }))
+const AuditoriaCTA = dynamic(() =>
+  import("@/components/sections/AuditoriaCTA").then(m => ({ default: m.AuditoriaCTA }))
 );
 
 const Services = dynamic(() =>
@@ -56,7 +56,7 @@ export default function Home() {
     <>
       <Hero />
       <Pain />
-      <FunnelComparison />
+      <AuditoriaCTA />
       <Services />
       <TrustLogos />
       <CaseStudy />

@@ -181,9 +181,10 @@ components/
   sections/
     Hero.tsx
     Pain.tsx
+    AuditoriaCTA.tsx           ← input de URL + mockup de resultado (reemplaza FunnelComparison)
+    Showroom.tsx               ← 3 casos con Problema/Intervención/Resultado (absorbe CaseStudy)
+    Santiago.tsx               ← foto + historia personal
     Services.tsx
-    CaseStudy.tsx
-    FunnelComparison.tsx
     Process.tsx
     Pricing.tsx
     FAQ.tsx
@@ -239,3 +240,20 @@ public/
 8. **Comentarios en español** — coherente con el tono del proyecto
 9. **Resend init dentro del handler** — nunca a nivel de módulo (falla en build sin env var)
 10. **Respetar prefers-reduced-motion** — no animar si el usuario lo desactivó
+
+---
+
+## 6. ESTRUCTURA DE PÁGINA (actualizada)
+
+### Landing page.tsx — orden de secciones
+Hero → Pain → AuditoriaCTA → Showroom → Santiago →
+Process → TrustLogos → Pricing → FAQ → CTAFinal
+
+### Secciones eliminadas
+- **FunnelComparison** — reemplazada por AuditoriaCTA
+- **CaseStudy** — absorbida dentro de Showroom
+
+### Secciones nuevas a crear
+- **AuditoriaCTA** — input de URL + mockup de resultado
+- **Showroom** — 3 casos con Problema/Intervención/Resultado
+- **Santiago** — foto + historia personal
