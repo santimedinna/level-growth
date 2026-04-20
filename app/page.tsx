@@ -17,8 +17,8 @@ const AuditoriaCTA = dynamic(() =>
   import("@/components/sections/AuditoriaCTA").then(m => ({ default: m.AuditoriaCTA }))
 );
 
-const Services = dynamic(() =>
-  import("@/components/sections/Services").then(m => ({ default: m.Services }))
+const Showroom = dynamic(() =>
+  import("@/components/sections/Showroom").then(m => ({ default: m.Showroom }))
 );
 
 const Santiago = dynamic(() =>
@@ -61,7 +61,7 @@ export default function Home() {
       <Hero />
       <Pain />
       <AuditoriaCTA />
-      <Services />
+      <Showroom />
       <Santiago />
       <TrustLogos />
       <CaseStudy />
