@@ -454,7 +454,11 @@ function analyze(html: string, url: string): CopyResult {
     const alt = ($(el).attr("alt") ?? "").toLowerCase();
     return alt.includes("logo") || alt.includes("cliente");
   });
-  const hasSocialProof = hasSocialProofText || hasSocialProofImg;
+  const hasTestimonialStructure =
+    /alumno desde|cliente desde|lo que dicen|dicen nuestros|nuestros clientes/i.test(bodyText) ||
+    $('[class*="testimoni"], [class*="review"], [class*="opinion"], [data-section="testimoni"]').length > 0 ||
+    /desde \d{4}|hace \d+ años|llevo \d+ (años|meses)/i.test(bodyText);
+  const hasSocialProof = hasSocialProofText || hasSocialProofImg || hasTestimonialStructure;
 
   /* ── 6. Flags semánticos ─────────────────────────────────────────── */
   const headingArea = `${$("h1").first().text().toLowerCase()} ${$("h2").first().text().toLowerCase()}`;
