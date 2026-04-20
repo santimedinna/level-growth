@@ -654,6 +654,7 @@ export async function GET(request: Request) {
       const result = analyze(html, url);
 
       cache.set(url, { data: result, expires: Date.now() + TTL });
+      console.log(`[COPY-SCORE] ${url.slice(0,50)} | pageType=${result.pageType} | businessType=${result.businessType} | copyScore=${result.copyScore} | hasSocialProof=${result.hasSocialProof} | hasGenericH1=${result.hasGenericH1} | hasFeatureBias=${result.hasFeatureBias} | hasUnsubstantiated=${result.hasUnsubstantiated} | egoCount=${countOccurrences(html, EGO_WORDS)} | clientCount=${countOccurrences(html, CLIENT_WORDS)}`);
       return NextResponse.json(result);
     } catch (err) {
       lastError = err;
