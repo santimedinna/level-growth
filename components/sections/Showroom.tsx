@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 
 /* ─── Datos de proyectos ──────────────────── */
@@ -9,20 +6,20 @@ const PROJECTS = [
     name:      "La Jungla Encantada",
     niche:     "Alquiler de inflables — Córdoba",
     url:       "https://la-jungla-encantada.vercel.app/",
+    image:     "/images/showroom/La-jungla-showroom.webp",
     pagespeed: "96 · 100 · 100 · 100",
   },
   {
     name:      "Rap Thai",
     niche:     "Muay Thai — Córdoba",
     url:       "https://rap-thai.vercel.app/",
+    image:     "/images/showroom/rap-thai-showroom.webp",
     pagespeed: "93 · 100 · 100 · 100",
   },
 ];
 
 /* ─── Mockup de browser ───────────────────── */
-function BrowserMockup({ url, name }: { url: string; name: string }) {
-  const [failed, setFailed] = useState(false);
-
+function BrowserMockup({ url, image, name }: { url: string; image: string; name: string }) {
   return (
     <div className="rounded-xl overflow-hidden border border-white/[0.08]"
       style={{ background: "#080C14" }}>
@@ -36,34 +33,15 @@ function BrowserMockup({ url, name }: { url: string; name: string }) {
         </span>
       </div>
 
-      {/* Contenido */}
-      <div className="relative overflow-hidden" style={{ height: "300px" }}>
-        {failed ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-            style={{ background: "#0D1221" }}>
-            <p className="font-body text-sm text-[#7A8FA6]">{name}</p>
-            <a href={url} target="_blank" rel="noopener noreferrer"
-              className="font-body text-xs text-[#3FC87A] underline underline-offset-2">
-              {url.replace("https://", "")}
-            </a>
-          </div>
-        ) : (
-          <iframe
-            src={url}
-            title={name}
-            onError={() => setFailed(true)}
-            style={{
-              width:           "133.33%",
-              height:          "400px",
-              border:          "none",
-              pointerEvents:   "none",
-              transform:       "scale(0.75)",
-              transformOrigin: "top left",
-              display:         "block",
-            }}
-          />
-        )}
-      </div>
+      {/* Imagen del sitio — click abre en nueva pestaña */}
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        <img
+          src={image}
+          alt={name}
+          className="w-full rounded-b-lg"
+          style={{ display: "block" }}
+        />
+      </a>
     </div>
   );
 }
@@ -86,9 +64,9 @@ export function Showroom() {
 
         {/* Grid de proyectos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {PROJECTS.map(({ name, niche, url, pagespeed }) => (
+          {PROJECTS.map(({ name, niche, url, image, pagespeed }) => (
             <div key={name} className="flex flex-col gap-4">
-              <BrowserMockup url={url} name={name} />
+              <BrowserMockup url={url} image={image} name={name} />
 
               <div className="flex items-end justify-between gap-4">
                 <div>
