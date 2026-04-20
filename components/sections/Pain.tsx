@@ -35,7 +35,7 @@ export function Pain() {
   return (
     <section
       id="problema"
-      className="bg-lg-bg-secondary pt-[clamp(1.875rem,2.5vw,2.5rem)] pb-[clamp(3.75rem,5vw,5rem)] px-[clamp(1.5rem,5vw,4rem)]"
+      className="bg-lg-bg-secondary pt-[clamp(1.875rem,2.5vw,2.5rem)] pb-8 px-[clamp(1.5rem,5vw,4rem)]"
     >
       <div className="max-w-[1200px] mx-auto">
 

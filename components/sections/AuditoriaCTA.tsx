@@ -38,7 +38,7 @@ export function AuditoriaCTA() {
   }
 
   return (
-    <section className="px-[clamp(1.5rem,5vw,4rem)] py-[clamp(5rem,12vw,10rem)]"
+    <section className="px-[clamp(1.5rem,5vw,4rem)] pt-8 pb-[clamp(5rem,12vw,10rem)]"
       style={{ background: "#0D1221" }}>
       <div className="max-w-[1200px] mx-auto">
         <motion.div
