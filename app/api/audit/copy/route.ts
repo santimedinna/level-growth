@@ -469,7 +469,9 @@ function analyze(html: string, url: string): CopyResult {
 
   const featureCount  = countOccurrences(bodyText, FEATURE_WORDS);
   const benefitCount  = countOccurrences(bodyText, BENEFIT_WORDS);
-  const hasFeatureBias = featureCount > 3 && (benefitCount === 0 || featureCount > benefitCount * 2);
+  const hasFeatureBias = featureCount > 3
+    && (benefitCount === 0 || featureCount > benefitCount * 2)
+    && bodyText.trim().split(/\s+/).length > 800;
 
   const claimCount        = countOccurrences(bodyText, CLAIM_WORDS);
   const hasNumericEvidence = STATS_PATTERN.test(bodyText);
