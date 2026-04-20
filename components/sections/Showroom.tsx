@@ -3,18 +3,20 @@ import { Badge } from "@/components/ui/Badge";
 /* ─── Datos de proyectos ──────────────────── */
 const PROJECTS = [
   {
-    name:      "La Jungla Encantada",
-    niche:     "Alquiler de inflables — Córdoba",
-    url:       "https://la-jungla-encantada.vercel.app/",
-    image:     "/images/showroom/La-jungla-showroom.webp",
-    pagespeed: "96 · 100 · 100 · 100",
+    name:            "Rap Thai",
+    niche:           "Muay Thai — Córdoba",
+    url:             "https://rap-thai.vercel.app/",
+    image:           "/images/showroom/rap-thai-showroom.webp",
+    pagespeedMobile: "93 · 100 · 100 · 100",
+    pagespeedDesktop:"100 · 100 · 100 · 100",
   },
   {
-    name:      "Rap Thai",
-    niche:     "Muay Thai — Córdoba",
-    url:       "https://rap-thai.vercel.app/",
-    image:     "/images/showroom/rap-thai-showroom.webp",
-    pagespeed: "93 · 100 · 100 · 100",
+    name:            "La Jungla Encantada",
+    niche:           "Alquiler de inflables — Córdoba",
+    url:             "https://la-jungla-encantada.vercel.app/",
+    image:           "/images/showroom/La-jungla-showroom.webp",
+    pagespeedMobile: "96 · 100 · 100 · 100",
+    pagespeedDesktop:"100 · 100 · 100 · 100",
   },
 ];
 
@@ -64,7 +66,7 @@ export function Showroom() {
 
         {/* Grid de proyectos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {PROJECTS.map(({ name, niche, url, image, pagespeed }) => (
+          {PROJECTS.map(({ name, niche, url, image, pagespeedMobile, pagespeedDesktop }) => (
             <div key={name} className="flex flex-col gap-4">
               <BrowserMockup url={url} image={image} name={name} />
 
@@ -73,9 +75,15 @@ export function Showroom() {
                   <p className="font-body font-medium text-white">{name}</p>
                   <p className="font-body text-[0.8rem] text-[#4A6070]">{niche}</p>
                   <p className="font-mono text-sm mt-1" style={{ color: "#3FC87A" }}>
-                    {pagespeed}
+                    {pagespeedMobile}
                     <span className="font-body text-[0.65rem] text-[#4A6070] ml-1.5">
                       PageSpeed mobile
+                    </span>
+                  </p>
+                  <p className="font-mono text-sm" style={{ color: "#3FC87A" }}>
+                    {pagespeedDesktop}
+                    <span className="font-body text-[0.65rem] text-[#4A6070] ml-1.5">
+                      PageSpeed desktop
                     </span>
                   </p>
                 </div>
