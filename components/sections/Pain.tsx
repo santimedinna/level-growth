@@ -17,16 +17,16 @@ const stagger = {
 /* ─── Datos ───────────────────────────────── */
 const pains = [
   {
-    title: '"Tengo visitas pero nadie compra"',
-    body:  "Tu sitio tiene tráfico pero la tasa de conversión es casi cero. El problema no es la cantidad de visitas — es lo que pasa cuando llegan.",
+    title: "Tu web es un colador, no un vendedor.",
+    body:  "Tenés visitas, pero se escapan por los agujeros de tu sitio. Si no vendés con mil visitas, el problema no es el tráfico, es tu motor. Una web lenta o confusa mata cualquier pauta.",
   },
   {
-    title: '"Hago publicidad pero no sé si funciona"',
-    body:  "Invertís en ads sin saber exactamente qué retorno obtenés. Cada peso parece que desaparece sin dejar rastro.",
+    title: "Estás invirtiendo a ciegas.",
+    body:  "Invertís en publicidad pero no sabés qué funciona y qué no. Cada peso que gastás sin datos es plata tirada. Si no sabés quién te compra ni volvés a aparecer ante el que te vio, no estás invirtiendo, estás apostando.",
   },
   {
-    title: '"Mi vendedor pierde clientes que ya estaban listos"',
-    body:  "El funnel funciona pero falla en el último paso: el contacto humano. Un WhatsApp sin responder es un cliente que se va a la competencia.",
+    title: "Tu web no habla, y tu WhatsApp explota.",
+    body:  "Tenés un producto excelente, pero tu página no explica nada. Tu WhatsApp está lleno de consultas que no cierran. La web debería estar filtrando y resolviendo sola — no mandarte a explicar mil veces lo mismo.",
   },
 ];
 
@@ -80,8 +80,7 @@ export function Pain() {
           variants={fadeUp}
           className="font-body text-[1.125rem] text-lg-text-secondary text-center leading-[1.7] max-w-[680px] mx-auto"
         >
-          El problema casi nunca es uno solo — es la suma de pequeñas roturas
-          en cada etapa del proceso. Por eso auditamos el funnel completo.
+          Tu competencia ya lo está resolviendo. ¿Cuánto más vas a esperar?
         </motion.p>
 
 

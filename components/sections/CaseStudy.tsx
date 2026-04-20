@@ -62,7 +62,7 @@ export function CaseStudy() {
           {/* Métricas grandes */}
           <motion.div
             variants={stagger}
-            className="grid grid-cols-3 gap-4 text-center w-full"
+            className="grid grid-cols-3 gap-2 text-center w-full text-sm sm:text-base"
           >
             {caseMetrics.map((m, i) => (
               <motion.div
@@ -73,7 +73,8 @@ export function CaseStudy() {
                   i > 0 && "sm:border-l border-white/[0.08]",
                 ].filter(Boolean).join(" ")}
               >
-                <p className="font-mono text-[clamp(2rem,4vw,3.5rem)] font-medium gradient-text leading-none">
+                <p className="font-mono font-medium gradient-text leading-none whitespace-nowrap"
+                  style={{ fontSize: "clamp(1.5rem, 6vw, 3rem)" }}>
                   {m.value}
                 </p>
                 <p className="font-body text-xs text-lg-text-muted tracking-[0.08em] uppercase max-w-[140px] leading-relaxed">
