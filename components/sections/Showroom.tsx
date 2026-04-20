@@ -66,7 +66,7 @@ export function Showroom() {
 
         {/* Grid de proyectos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {PROJECTS.map(({ name, niche, url, image, pagespeedMobile, pagespeedDesktop }) => (
+          {PROJECTS.map(({ name, niche, url, image, pagespeedMobile }) => (
             <div key={name} className="flex flex-col gap-4">
               <BrowserMockup url={url} image={image} name={name} />
 
@@ -78,12 +78,6 @@ export function Showroom() {
                     {pagespeedMobile}
                     <span className="font-body text-[0.65rem] text-[#4A6070] ml-1.5">
                       PageSpeed mobile
-                    </span>
-                  </p>
-                  <p className="font-mono text-sm" style={{ color: "#3FC87A" }}>
-                    {pagespeedDesktop}
-                    <span className="font-body text-[0.65rem] text-[#4A6070] ml-1.5">
-                      PageSpeed desktop
                     </span>
                   </p>
                 </div>

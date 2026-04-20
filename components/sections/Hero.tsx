@@ -129,16 +129,16 @@ export function Hero() {
         {/* Divisor + Métricas */}
         <div style={anim("0.36s")}>
           <div className="border-t border-white/[0.08] pt-8">
-            <div className="grid grid-cols-3">
+            <div className="grid grid-cols-3 w-full px-2">
               {metrics.map((m, i) => (
                 <div
                   key={m.label}
                   className={[
-                    "text-center px-4",
+                    "text-center px-2",
                     i > 0 && "border-l border-white/[0.08]",
                   ].filter(Boolean).join(" ")}
                 >
-                  <p className="font-mono text-[clamp(2rem,4vw,3.5rem)] font-medium gradient-text leading-none mb-1 whitespace-nowrap">
+                  <p className="font-mono text-[clamp(1.2rem,5vw,2rem)] font-medium gradient-text leading-none mb-1 whitespace-nowrap">
                     <CountUp {...m} />
                   </p>
                   <p className="font-body text-[0.75rem] text-lg-text-muted tracking-[0.08em] uppercase">
