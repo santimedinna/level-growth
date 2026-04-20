@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { Badge } from "@/components/ui/Badge";
 
 /* ─── Animaciones ─────────────────────────── */
 const fadeUp: Variants = {
@@ -44,10 +43,6 @@ export function Santiago() {
 
           {/* ── Columna derecha — texto ── */}
           <motion.div variants={staggerContainer} className="flex flex-col gap-6">
-            <motion.div variants={fadeUp}>
-              <Badge>El equipo</Badge>
-            </motion.div>
-
             <motion.h2
               variants={fadeUp}
               className="font-display font-bold text-[clamp(1.5rem,3vw,2.2rem)] leading-tight text-white"

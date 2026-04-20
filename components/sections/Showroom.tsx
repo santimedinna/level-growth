@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/Badge";
 
 /* ─── Datos de proyectos ──────────────────── */
 const PROJECTS = [
@@ -56,9 +55,6 @@ export function Showroom() {
 
         {/* Encabezado */}
         <div className="text-center mb-12">
-          <div className="mb-4">
-            <Badge>Sitios producidos</Badge>
-          </div>
           <h2 className="font-display font-bold text-[clamp(1.5rem,3vw,2.2rem)] leading-tight text-white">
             Trabajo real. Resultados verificables.
           </h2>

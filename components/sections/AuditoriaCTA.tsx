@@ -29,7 +29,7 @@ export function AuditoriaCTA() {
   const router   = useRouter();
   const [url, setUrl] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed    = url.trim();
     if (!trimmed) return;
@@ -50,7 +50,9 @@ export function AuditoriaCTA() {
         >
           {/* ── Lado izquierdo — formulario ── */}
           <motion.div variants={fadeUp} className="flex flex-col gap-6">
-            <Badge>Herramienta gratuita</Badge>
+            <div className="flex justify-center">
+              <Badge>Herramienta gratuita</Badge>
+            </div>
 
             <h2 className="font-display font-bold text-[clamp(1.5rem,3vw,2.2rem)] leading-tight text-white">
               Descubrí en segundos qué está frenando tus ventas

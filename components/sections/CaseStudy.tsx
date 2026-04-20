@@ -62,7 +62,7 @@ export function CaseStudy() {
           {/* Métricas grandes */}
           <motion.div
             variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-14 w-full max-w-[800px]"
+            className="grid grid-cols-3 gap-4 text-center w-full"
           >
             {caseMetrics.map((m, i) => (
               <motion.div
