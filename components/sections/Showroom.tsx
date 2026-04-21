@@ -41,6 +41,7 @@ function BrowserMockup({ url, image, name }: { url: string; image: string; name:
           alt={name}
           className="w-full rounded-b-lg"
           style={{ display: "block" }}
+          loading="lazy"
         />
       </a>
     </div>
