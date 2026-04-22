@@ -16,7 +16,7 @@ import {
 
 const TABS: TabDef[] = [
   { label: "Hero",        imageSrc: "/images/showroom/rap-thai-showroom.webp" },
-  { label: "Beneficios" },
+  { label: "Beneficios",  imageSrc: "/images/showroom/rap-thai-beneficios.webp" },
   { label: "Testimonios" },
 ];
 
@@ -36,9 +36,9 @@ const METRICS: MetricDef[] = [
 ];
 
 const TESTIMONIALS: TestimonialDef[] = [
-  { quote: "", name: "", role: "", placeholder: true },
-  { quote: "", name: "", role: "", placeholder: true },
-  { quote: "", name: "", role: "", placeholder: true },
+  { imageSrc: "/images/showroom/testimonio-rap-thai-1.webp" },
+  { imageSrc: "/images/showroom/testimonio-rap-thai-2.webp" },
+  { imageSrc: "/images/showroom/testimonio-rap-thai-3.webp" },
 ];
 
 export function RapThaiContent() {

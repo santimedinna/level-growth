@@ -231,9 +231,10 @@ export function MetricsGrid({ metrics, siteUrl }: { metrics: MetricDef[]; siteUr
 
 /* ─── Carrusel de testimonios ────────────────── */
 export interface TestimonialDef {
-  quote: string;
-  name: string;
-  role: string;
+  quote?: string;
+  name?: string;
+  role?: string;
+  imageSrc?: string;
   placeholder?: boolean;
 }
 
@@ -246,10 +247,19 @@ export function TestimonialCarousel({
   title: string;
   subtitle: string;
 }) {
-  const [current, setCurrent] = useState(0);
+  const [current,    setCurrent]    = useState(0);
+  const touchStartX                 = useRef(0);
 
   const prev = () => setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length);
   const next = () => setCurrent((c) => (c + 1) % testimonials.length);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(delta) > 50) delta > 0 ? next() : prev();
+  };
 
   const t = testimonials[current];
 
@@ -269,39 +279,57 @@ export function TestimonialCarousel({
       </motion.p>
 
       <motion.div variants={fadeUp}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="rounded-xl border p-8"
-            style={{ background: "#0D1221", borderColor: "rgba(63,200,122,0.15)" }}
-          >
-            {t.placeholder ? (
-              <div className="text-center py-8">
-                <p className="font-body text-sm text-[#4A6070]">Testimonio del cliente próximamente</p>
-              </div>
-            ) : (
-              <>
-                <div
-                  className="text-[#3FC87A] mb-4 leading-none select-none"
-                  style={{ fontSize: 48, fontFamily: "Georgia, serif" }}
-                >
-                  &ldquo;
+        {/* Área deslizable */}
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          style={{ touchAction: "pan-y" }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className={t.imageSrc ? "rounded-xl overflow-hidden border border-white/[0.08]" : "rounded-xl border p-8"}
+              style={t.imageSrc ? {} : { background: "#0D1221", borderColor: "rgba(63,200,122,0.15)" }}
+            >
+              {t.imageSrc ? (
+                /* Imagen de captura — recorte de 6px arriba y abajo para eliminar línea blanca */
+                <div className="overflow-hidden" style={{ background: "#0D1221" }}>
+                  <img
+                    src={t.imageSrc}
+                    alt={t.name ?? "Testimonio"}
+                    className="w-full h-auto block"
+                    style={{ marginTop: "-6px", marginBottom: "-6px" }}
+                    loading="lazy"
+                  />
                 </div>
-                <p className="font-body text-[1.0625rem] text-[#7A8FA6] leading-[1.75] mb-6">
-                  {t.quote}
-                </p>
-                <div>
-                  <p className="font-body text-sm font-medium text-white">{t.name}</p>
-                  <p className="font-body text-xs text-[#4A6070]">{t.role}</p>
+              ) : t.placeholder ? (
+                <div className="text-center py-8">
+                  <p className="font-body text-sm text-[#4A6070]">Testimonio del cliente próximamente</p>
                 </div>
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              ) : (
+                <>
+                  <div
+                    className="text-[#3FC87A] mb-4 leading-none select-none"
+                    style={{ fontSize: 48, fontFamily: "Georgia, serif" }}
+                  >
+                    &ldquo;
+                  </div>
+                  <p className="font-body text-[1.0625rem] text-[#7A8FA6] leading-[1.75] mb-6">
+                    {t.quote}
+                  </p>
+                  <div>
+                    <p className="font-body text-sm font-medium text-white">{t.name}</p>
+                    <p className="font-body text-xs text-[#4A6070]">{t.role}</p>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {/* Controles */}
         <div className="flex items-center justify-between mt-5">
