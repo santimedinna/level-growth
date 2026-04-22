@@ -278,7 +278,7 @@ export function TestimonialCarousel({
         {subtitle}
       </motion.p>
 
-      <motion.div variants={fadeUp}>
+      <motion.div variants={fadeUp} className="max-w-[500px] mx-auto w-full px-4">
         {/* Área deslizable */}
         <div
           onTouchStart={handleTouchStart}
@@ -292,15 +292,15 @@ export function TestimonialCarousel({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className={t.imageSrc ? "rounded-xl overflow-hidden border border-white/[0.08]" : "rounded-xl border p-8"}
+              className={t.imageSrc ? "" : "rounded-xl border p-8"}
               style={t.imageSrc ? {} : { background: "#0D1221", borderColor: "rgba(63,200,122,0.15)" }}
             >
               {t.imageSrc ? (
-                <div className="overflow-hidden max-w-[400px] mx-auto" style={{ background: "#0D1221" }}>
+                <div className="flex flex-col items-center gap-4 max-w-[380px] mx-auto">
                   <img
                     src={t.imageSrc}
                     alt={t.name ?? "Testimonio"}
-                    className="max-h-[300px] w-auto object-contain rounded-xl"
+                    className="max-h-[320px] w-auto object-contain rounded-xl mx-auto"
                     loading="lazy"
                   />
                 </div>
