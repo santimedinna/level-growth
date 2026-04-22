@@ -296,13 +296,11 @@ export function TestimonialCarousel({
               style={t.imageSrc ? {} : { background: "#0D1221", borderColor: "rgba(63,200,122,0.15)" }}
             >
               {t.imageSrc ? (
-                /* Imagen de captura — recorte de 6px arriba y abajo para eliminar línea blanca */
-                <div className="overflow-hidden" style={{ background: "#0D1221" }}>
+                <div className="overflow-hidden max-w-[400px] mx-auto" style={{ background: "#0D1221" }}>
                   <img
                     src={t.imageSrc}
                     alt={t.name ?? "Testimonio"}
-                    className="w-full h-auto block"
-                    style={{ marginTop: "-6px", marginBottom: "-6px" }}
+                    className="max-h-[300px] w-auto object-contain rounded-xl"
                     loading="lazy"
                   />
                 </div>
