@@ -10,6 +10,7 @@ export interface PostFrontmatter {
   date:        string;
   category:    string;
   readTime:    string;
+  cover?:      string;
 }
 
 export type PostMeta = PostFrontmatter & { slug: string };

@@ -122,12 +122,23 @@ export default async function BlogPostPage({
           </div>
         </header>
 
-        {/* Imagen placeholder */}
-        <div className="h-64 bg-lg-bg-secondary border border-white/[0.06] rounded-card flex items-center justify-center mb-12">
-          <span className="font-mono text-lg-text-muted text-xs tracking-widest uppercase">
-            Cover image
-          </span>
-        </div>
+        {/* Cover image */}
+        {frontmatter.cover ? (
+          <div className="relative h-64 overflow-hidden rounded-card mb-12">
+            <img
+              src={frontmatter.cover}
+              alt={frontmatter.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#080C14]/60 to-transparent" />
+          </div>
+        ) : (
+          <div className="h-64 bg-lg-bg-secondary border border-white/[0.06] rounded-card flex items-center justify-center mb-12">
+            <span className="font-mono text-lg-text-muted text-xs tracking-widest uppercase">
+              Cover image
+            </span>
+          </div>
+        )}
 
         {/* Contenido MDX */}
         <div>

@@ -54,10 +54,24 @@ export function BlogGrid({ posts }: { posts: PostMeta[] }) {
               href={`/blog/${post.slug}`}
               className="group flex flex-col bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] rounded-card overflow-hidden hover:border-lg-green/20 transition-all duration-300"
             >
-              <div className="h-44 bg-lg-bg-tertiary flex items-center justify-center border-b border-white/[0.06]">
-                <span className="font-mono text-lg-text-muted text-xs tracking-widest uppercase">
-                  Level Growth
-                </span>
+              <div className="relative h-44 overflow-hidden border-b border-white/[0.06]">
+                {post.cover ? (
+                  <>
+                    <img
+                      src={post.cover}
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#080C14]/80 via-[#080C14]/20 to-transparent" />
+                  </>
+                ) : (
+                  <div className="h-full bg-lg-bg-tertiary flex items-center justify-center">
+                    <span className="font-mono text-lg-text-muted text-xs tracking-widest uppercase">
+                      Level Growth
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col flex-1 p-6 gap-3">
