@@ -43,8 +43,25 @@ function IconClarity() {
 
 function IconNextJs() {
   return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 16.633L9.75 7.5H8.25v9h1.5v-6.633l7.244 9.133c-.972.637-2.064 1.074-3.244 1.306V16.5h-1.5v3.75c-3.728-.609-6.75-3.694-6.75-7.5S8.272 5.359 12 4.75V8.25h1.5V4.75c3.728.609 6.75 3.694 6.75 7.5 0 1.823-.655 3.494-1.731 4.8L14.25 12.75V7.5h-1.5v9h1.5v-2.367l2.394 3.022c-.239.18-.49.346-.75.478z"/>
+    <svg width="28" height="28" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <mask id="nextjs-mask" style={{ maskType: "alpha" }} maskUnits="userSpaceOnUse" x="0" y="0" width="180" height="180">
+        <circle cx="90" cy="90" r="90" fill="black"/>
+      </mask>
+      <g mask="url(#nextjs-mask)">
+        <circle cx="90" cy="90" r="90" fill="black"/>
+        <path d="M149.508 157.52L69.142 54H54V125.97H66.1V69.3L139.999 164.845C143.333 162.614 146.509 160.165 149.508 157.52Z" fill="url(#nextjs-gradient)"/>
+        <rect x="115" y="54" width="12" height="72" fill="url(#nextjs-gradient2)"/>
+      </g>
+      <defs>
+        <linearGradient id="nextjs-gradient" x1="109" y1="116.5" x2="144.5" y2="160.5" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="white" stopOpacity="0"/>
+        </linearGradient>
+        <linearGradient id="nextjs-gradient2" x1="115" y1="54" x2="115.5" y2="106.5" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="white" stopOpacity="0"/>
+        </linearGradient>
+      </defs>
     </svg>
   );
 }
