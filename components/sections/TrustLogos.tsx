@@ -86,7 +86,7 @@ const tools = [
   {
     name:  "Next.js",
     icon:  <IconNextJs />,
-    desc:  "Webs que cargan en menos de 1 segundo — la misma tecnología que usa TikTok y Netflix",
+    desc:  "Webs que cargan en menos de 1 segundo con la misma tecnología que usa TikTok y Netflix",
   },
 ];
 

@@ -18,7 +18,7 @@ export default function ProyectosPage() {
           Máquinas de venta a medida.
         </h1>
         <p className="font-body text-[1.125rem] text-[#7A8FA6] leading-[1.7]">
-          Una web lenta pierde clientes antes de que lean una sola palabra. Construimos con Next.js porque la velocidad es nuestra prioridad número uno — y nuestros números lo prueban.
+          Una web lenta pierde clientes antes de que lean una sola palabra. Construimos con Next.js porque la velocidad es nuestra prioridad número uno y nuestros números lo prueban.
         </p>
       </div>
 
