@@ -105,30 +105,26 @@ export interface TabDef {
   imageSrc?: string;
 }
 
-const CIRCLE_NUMS = ["①", "②", "③", "④", "⑤"];
-
-function NumberedDot({
-  number, top, left, isActive, onClick,
+function SmallDot({
+  top, left, isActive, onClick,
 }: {
-  number: number; top: string; left: string; isActive: boolean; onClick: () => void;
+  top: string; left: string; isActive: boolean; onClick: () => void;
 }) {
   return (
     <button
-      className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+      className="absolute z-10 -translate-x-1/2 -translate-y-1/2 p-2"
       style={{ top, left }}
       onClick={onClick}
-      aria-label={`Punto ${number}`}
+      aria-label="punto de anotación"
     >
-      <div className={[
-        "relative flex items-center justify-center w-6 h-6 rounded-full border font-mono text-xs font-bold transition-all duration-200 select-none",
-        isActive
-          ? "bg-[#22c55e]/30 border-[#22c55e] text-[#22c55e]"
-          : "bg-black/60 border-[#22c55e]/50 text-white/60 hover:border-[#22c55e]/80 hover:text-white/90",
-      ].join(" ")}>
+      <div className="relative w-2 h-2">
         {isActive && (
-          <span className="absolute inset-0 rounded-full border border-[#22c55e] animate-ping opacity-30" />
+          <span className="absolute inset-0 rounded-full bg-[#22c55e] animate-ping opacity-60" />
         )}
-        <span className="relative z-10">{number}</span>
+        <span className={[
+          "relative block w-2 h-2 rounded-full transition-all duration-200",
+          isActive ? "bg-[#22c55e]" : "bg-[#22c55e]/70 hover:bg-[#22c55e]",
+        ].join(" ")} />
       </div>
     </button>
   );
@@ -182,9 +178,8 @@ export function BrowserMockup({
           {activeTab === 0 && (
             useChips ? (
               hotspots.map((h, i) => (
-                <NumberedDot
+                <SmallDot
                   key={i}
-                  number={i + 1}
                   top={h.top}
                   left={h.left}
                   isActive={activeHotspot === i}
@@ -236,26 +231,28 @@ export function BrowserMockup({
         ))}
       </div>
 
-      {/* Chips + explicación — solo sistema numerado */}
+      {/* Tabs de texto + descripción — solo sistema con chipLabel */}
       {useChips && (
         <>
-          <div className="flex gap-2 flex-wrap justify-center mt-4">
+          <div className="flex justify-center items-center gap-6 mt-4 border-t border-zinc-800 pt-4">
             {hotspots.map((h, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveHotspot(i)}
-                className={[
-                  "px-3 py-1 rounded-full text-sm border cursor-pointer transition-all duration-200 font-body",
-                  i === activeHotspot
-                    ? "bg-[#22c55e]/20 text-[#4ade80] border-[#22c55e]"
-                    : "border-[#22c55e]/40 text-[#7A8FA6] hover:border-[#22c55e]/70 hover:text-white",
-                ].join(" ")}
-              >
-                {CIRCLE_NUMS[i]} {h.chipLabel}
-              </button>
+              <span key={i} className="flex items-center gap-6">
+                {i > 0 && <span className="text-zinc-700 select-none">|</span>}
+                <button
+                  onClick={() => setActiveHotspot(i)}
+                  className={[
+                    "text-sm font-medium transition-colors duration-200",
+                    i === activeHotspot
+                      ? "text-green-400 underline underline-offset-4"
+                      : "text-zinc-500 hover:text-zinc-300 cursor-pointer",
+                  ].join(" ")}
+                >
+                  {h.chipLabel}
+                </button>
+              </span>
             ))}
           </div>
-          <p className="font-body text-sm text-[#7A8FA6] text-center mt-3 leading-relaxed min-h-[1.5em]">
+          <p className="text-center text-sm text-zinc-400 italic mt-2 min-h-[1.5em]">
             {activeHotspot !== null ? hotspots[activeHotspot].label : ""}
           </p>
         </>
