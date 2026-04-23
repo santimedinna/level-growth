@@ -1,17 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   fadeUp,
   stagger,
   BrowserMockup,
   MetricsGrid,
-  TestimonialCarousel,
   CaseCTA,
   type TabDef,
   type HotspotDef,
   type MetricDef,
-  type TestimonialDef,
 } from "@/components/sections/proyectos/CaseShared";
 
 const TABS: TabDef[] = [
@@ -36,11 +35,6 @@ const METRICS: MetricDef[] = [
   { label: "Total Blocking Time",       target: 0,   suffix: "ms"   },
 ];
 
-const TESTIMONIALS: TestimonialDef[] = [
-  { imageSrc: "/images/showroom/testimonio-rap-thai-1.webp" },
-  { imageSrc: "/images/showroom/testimonio-rap-thai-2.webp" },
-  { imageSrc: "/images/showroom/testimonio-rap-thai-3.webp" },
-];
 
 export function RapThaiContent() {
   return (
@@ -171,11 +165,55 @@ export function RapThaiContent() {
       </motion.div>
 
       {/* ── 4. Testimonios ── */}
-      <TestimonialCarousel
-        testimonials={TESTIMONIALS}
-        title="Lo que dijo Nicolás"
-        subtitle="Nicolás Gutiérrez — Fundador, Rap Thai"
-      />
+      <motion.div
+        variants={stagger}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-60px" }}
+        className="mb-20"
+      >
+        <motion.h2 variants={fadeUp} className="font-display font-bold text-xl text-white mb-1">
+          Lo que dijo Nicolás
+        </motion.h2>
+        <motion.p variants={fadeUp} className="font-body text-sm text-[#4A6070] mb-6">
+          Nicolás Gutiérrez — Fundador, Rap Thai
+        </motion.p>
+
+        <motion.div
+          variants={fadeUp}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 max-w-3xl mx-auto"
+        >
+          <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/50 shadow-xl">
+            <Image
+              src="/images/showroom/testimonio-rap-thai-1.webp"
+              alt="Testimonio Nicolás Gutiérrez"
+              width={400}
+              height={600}
+              className="w-full h-auto max-h-[420px] object-cover object-top"
+            />
+          </div>
+          <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/50 shadow-xl">
+            <Image
+              src="/images/showroom/testimonio-rap-thai-2.webp"
+              alt="Testimonio Nicolás Gutiérrez"
+              width={400}
+              height={600}
+              className="w-full h-auto max-h-[420px] object-cover object-top"
+            />
+          </div>
+          <div className="md:col-span-2 max-w-sm mx-auto w-full">
+            <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/50 shadow-xl">
+              <Image
+                src="/images/showroom/testimonio-rap-thai-3.webp"
+                alt="Testimonio Nicolás Gutiérrez"
+                width={400}
+                height={600}
+                className="w-full h-auto max-h-[420px] object-cover object-top"
+              />
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
 
       {/* ── 5. CTA ── */}
       <CaseCTA />
