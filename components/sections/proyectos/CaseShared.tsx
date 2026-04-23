@@ -52,6 +52,7 @@ export interface HotspotDef {
   top: string;
   left: string;
   label: string;
+  chipLabel?: string;
 }
 
 interface HotspotPointProps extends HotspotDef {
@@ -104,6 +105,35 @@ export interface TabDef {
   imageSrc?: string;
 }
 
+const CIRCLE_NUMS = ["①", "②", "③", "④", "⑤"];
+
+function NumberedDot({
+  number, top, left, isActive, onClick,
+}: {
+  number: number; top: string; left: string; isActive: boolean; onClick: () => void;
+}) {
+  return (
+    <button
+      className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+      style={{ top, left }}
+      onClick={onClick}
+      aria-label={`Punto ${number}`}
+    >
+      <div className={[
+        "relative flex items-center justify-center w-6 h-6 rounded-full border font-mono text-xs font-bold transition-all duration-200 select-none",
+        isActive
+          ? "bg-[#22c55e]/30 border-[#22c55e] text-[#22c55e]"
+          : "bg-black/60 border-[#22c55e]/50 text-white/60 hover:border-[#22c55e]/80 hover:text-white/90",
+      ].join(" ")}>
+        {isActive && (
+          <span className="absolute inset-0 rounded-full border border-[#22c55e] animate-ping opacity-30" />
+        )}
+        <span className="relative z-10">{number}</span>
+      </div>
+    </button>
+  );
+}
+
 export function BrowserMockup({
   url,
   tabs,
@@ -113,8 +143,10 @@ export function BrowserMockup({
   tabs: TabDef[];
   hotspots: HotspotDef[];
 }) {
+  const useChips = hotspots.length > 0 && hotspots.every((h) => h.chipLabel);
+
   const [activeTab,     setActiveTab]     = useState(0);
-  const [activeHotspot, setActiveHotspot] = useState<number | null>(null);
+  const [activeHotspot, setActiveHotspot] = useState<number | null>(useChips ? 0 : null);
 
   const currentImage = tabs[activeTab]?.imageSrc;
 
@@ -146,22 +178,36 @@ export function BrowserMockup({
               </span>
             </div>
           )}
-          {/* Hotspots solo en el primer tab */}
-          {activeTab === 0 &&
-            hotspots.map((h, i) => (
-              <HotspotPoint
-                key={i}
-                {...h}
-                index={i}
-                active={activeHotspot}
-                onToggle={setActiveHotspot}
-              />
-            ))}
+          {/* Dots — solo en el primer tab */}
+          {activeTab === 0 && (
+            useChips ? (
+              hotspots.map((h, i) => (
+                <NumberedDot
+                  key={i}
+                  number={i + 1}
+                  top={h.top}
+                  left={h.left}
+                  isActive={activeHotspot === i}
+                  onClick={() => setActiveHotspot(i)}
+                />
+              ))
+            ) : (
+              hotspots.map((h, i) => (
+                <HotspotPoint
+                  key={i}
+                  {...h}
+                  index={i}
+                  active={activeHotspot}
+                  onToggle={setActiveHotspot}
+                />
+              ))
+            )
+          )}
         </div>
       </div>
 
-      {/* Tooltip mobile */}
-      {activeTab === 0 && activeHotspot !== null && (
+      {/* Tooltip mobile — solo sistema clásico */}
+      {!useChips && activeTab === 0 && activeHotspot !== null && (
         <div
           className="mt-3 px-4 py-3 rounded-lg border md:hidden"
           style={{ background: "#0D1221", borderColor: "rgba(63,200,122,0.25)" }}
@@ -172,12 +218,12 @@ export function BrowserMockup({
         </div>
       )}
 
-      {/* Pills de navegación */}
+      {/* Pills de navegación entre capturas */}
       <div className="flex gap-2 mt-4">
         {tabs.map((tab, i) => (
           <button
             key={i}
-            onClick={() => { setActiveTab(i); setActiveHotspot(null); }}
+            onClick={() => { setActiveTab(i); if (!useChips) setActiveHotspot(null); }}
             className={[
               "px-3 py-1 rounded-full text-xs font-body font-medium transition-all duration-200",
               i === activeTab
@@ -189,6 +235,31 @@ export function BrowserMockup({
           </button>
         ))}
       </div>
+
+      {/* Chips + explicación — solo sistema numerado */}
+      {useChips && (
+        <>
+          <div className="flex gap-2 flex-wrap justify-center mt-4">
+            {hotspots.map((h, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveHotspot(i)}
+                className={[
+                  "px-3 py-1 rounded-full text-sm border cursor-pointer transition-all duration-200 font-body",
+                  i === activeHotspot
+                    ? "bg-[#22c55e]/20 text-[#4ade80] border-[#22c55e]"
+                    : "border-[#22c55e]/40 text-[#7A8FA6] hover:border-[#22c55e]/70 hover:text-white",
+                ].join(" ")}
+              >
+                {CIRCLE_NUMS[i]} {h.chipLabel}
+              </button>
+            ))}
+          </div>
+          <p className="font-body text-sm text-[#7A8FA6] text-center mt-3 leading-relaxed min-h-[1.5em]">
+            {activeHotspot !== null ? hotspots[activeHotspot].label : ""}
+          </p>
+        </>
+      )}
     </div>
   );
 }

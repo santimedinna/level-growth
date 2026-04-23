@@ -21,9 +21,10 @@ const TABS: TabDef[] = [
 ];
 
 const HOTSPOTS: HotspotDef[] = [
-  { top: "14%", left: "48%", label: "Escasez real comunicada arriba del fold. \"Solo 8 lugares por turno\" genera urgencia sin mentir." },
-  { top: "32%", left: "22%", label: "Tipografía de impacto. El visitante lee el beneficio antes de ver cualquier otra cosa." },
-  { top: "60%", left: "38%", label: "Un solo CTA dominante arriba del fold. Sin opciones que compitan." },
+  { top: "14%", left: "48%", chipLabel: "Keyword",         label: "Keyword + ciudad: el visitante sabe en 2 segundos si llegó al lugar correcto." },
+  { top: "32%", left: "22%", chipLabel: "Escasez",          label: "Escasez real: genera urgencia sin mentir." },
+  { top: "60%", left: "38%", chipLabel: "CTA",              label: "Convierte intención en acción: probar es más fácil que decidir." },
+  { top: "75%", left: "70%", chipLabel: "Contexto visual",  label: "Refuerza el contexto y dirige la atención." },
 ];
 
 const METRICS: MetricDef[] = [
