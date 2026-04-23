@@ -22,28 +22,59 @@ const PROJECTS = [
 /* ─── Mockup de browser ───────────────────── */
 function BrowserMockup({ url, image, name }: { url: string; image: string; name: string }) {
   return (
-    <div className="rounded-xl overflow-hidden border border-white/[0.08]"
-      style={{ background: "#080C14" }}>
+    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#1a1a2e]">
       {/* Barra superior */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
-        <span className="w-3 h-3 rounded-full" style={{ background: "#EF4444" }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: "#F59E0B" }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: "#3FC87A" }} />
+      <div className="flex items-center gap-1.5 px-3 py-2 bg-[#1a1a2e] border-b border-white/[0.06]">
+        <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+        <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
+        <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
         <span className="font-mono text-[0.6rem] text-[#4A6070] ml-2 truncate">
           {url.replace("https://", "")}
         </span>
       </div>
 
-      {/* Imagen del sitio — click abre en nueva pestaña */}
+      {/* Imagen del sitio */}
       <a href={url} target="_blank" rel="noopener noreferrer">
         <img
           src={image}
           alt={name}
-          className="w-full rounded-b-lg"
-          style={{ display: "block" }}
+          className="w-full block"
           loading="lazy"
         />
       </a>
+
+      {/* Barra inferior estilo macOS dock */}
+      <div className="hidden md:flex items-center justify-center gap-3 px-4 py-2 bg-[#1a1a2e] border-t border-white/[0.06]">
+        {/* Finder */}
+        <div className="w-6 h-6 rounded-md bg-[#2a2a3e] flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none">
+            <rect width="24" height="24" rx="4" fill="#00BFFF" opacity="0.3"/>
+            <circle cx="12" cy="10" r="4" stroke="#00BFFF" strokeWidth="1.5"/>
+            <path d="M8 10 Q12 14 16 10" stroke="#00BFFF" strokeWidth="1.5" fill="none"/>
+          </svg>
+        </div>
+        {/* Chrome */}
+        <div className="w-6 h-6 rounded-md bg-[#2a2a3e] flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none">
+            <circle cx="12" cy="12" r="5" stroke="#3FC87A" strokeWidth="1.5"/>
+            <circle cx="12" cy="12" r="2" fill="#3FC87A"/>
+            <path d="M12 7 L21 7" stroke="#EF4444" strokeWidth="1.5"/>
+            <path d="M7.5 15.5 L3 22" stroke="#FBBF24" strokeWidth="1.5"/>
+            <path d="M16.5 15.5 L21 22" stroke="#3B82F6" strokeWidth="1.5"/>
+          </svg>
+        </div>
+        {/* Terminal */}
+        <div className="w-6 h-6 rounded-md bg-[#2a2a3e] flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none">
+            <path d="M4 6 L10 12 L4 18" stroke="#3FC87A" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M12 18 L20 18" stroke="#3FC87A" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </div>
+        {/* Separador */}
+        <div className="w-px h-4 bg-white/10 mx-1" />
+        {/* Punto activo */}
+        <div className="w-1 h-1 rounded-full bg-[#3FC87A] opacity-60" />
+      </div>
     </div>
   );
 }
@@ -60,7 +91,7 @@ export function Showroom() {
             Trabajo real. Resultados verificables.
           </h2>
           <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] mt-3">
-            Una web lenta pierde clientes antes de que lean una sola palabra. Los números de abajo son la prueba.
+            Una web lenta pierde clientes antes de que lean una sola palabra. Por eso la velocidad es nuestra prioridad.
           </p>
         </div>
 
