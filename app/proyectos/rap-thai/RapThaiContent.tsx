@@ -17,7 +17,7 @@ import {
 const TABS: TabDef[] = [
   { label: "Hero",        imageSrc: "/images/showroom/rap-thai-showroom.webp" },
   { label: "Beneficios",  imageSrc: "/images/showroom/rap-thai-beneficios.webp" },
-  { label: "Testimonios" },
+  { label: "Testimonios", imageSrc: "/images/showroom/rap-thai-testimonios.webp" },
 ];
 
 const HOTSPOTS: HotspotDef[] = [
