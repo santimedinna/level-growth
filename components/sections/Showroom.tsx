@@ -59,6 +59,9 @@ export function Showroom() {
           <h2 className="font-display font-bold text-[clamp(1.5rem,3vw,2.2rem)] leading-tight text-white">
             Trabajo real. Resultados verificables.
           </h2>
+          <p className="font-body text-[1rem] text-[#7A8FA6] leading-[1.7] mt-3">
+            Una web lenta pierde clientes antes de que lean una sola palabra. Los números de abajo son la prueba.
+          </p>
         </div>
 
         {/* Grid de proyectos */}

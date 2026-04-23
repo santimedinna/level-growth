@@ -9,16 +9,16 @@ export default function ProyectosPage() {
   return (
     <main className="max-w-[1200px] mx-auto px-[clamp(1.5rem,5vw,4rem)] py-[clamp(5rem,12vw,10rem)]">
 
-      {/* Hero compacto */}
-      <div className="mb-16 max-w-[600px]">
+      {/* Hero */}
+      <div className="mb-16 max-w-[680px]">
         <p className="font-body text-xs text-[#3FC87A] uppercase tracking-[0.12em] mb-4">
           Proyectos
         </p>
         <h1 className="font-display font-bold text-[clamp(2rem,4vw,3rem)] text-white leading-tight mb-4">
-          Trabajo real. Sin adornos.
+          Máquinas de venta a medida.
         </h1>
-        <p className="font-body text-lg text-[#7A8FA6] leading-[1.7]">
-          Cada sitio parte de un diagnóstico real y termina en resultados verificables.
+        <p className="font-body text-[1.125rem] text-[#7A8FA6] leading-[1.7]">
+          Una web lenta pierde clientes antes de que lean una sola palabra. Construimos con Next.js porque la velocidad es nuestra prioridad número uno — y nuestros números lo prueban.
         </p>
       </div>
 
