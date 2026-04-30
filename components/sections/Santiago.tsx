@@ -25,21 +25,39 @@ export function Santiago() {
           viewport={{ once: true, margin: "-80px" }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
         >
-          {/* ── Columna izquierda — foto ── */}
-          <motion.div variants={fadeUp}>
-            <div
-              className="w-full flex flex-col items-center justify-center gap-3 rounded-xl"
-              style={{
-                aspectRatio:     "4 / 5",
-                background:      "#0D1221",
-                border:          "1px solid rgba(63,200,122,0.25)",
-                borderRadius:    "12px",
-              }}
-            >
-              <span className="text-4xl">📷</span>
-              <p className="font-body text-sm text-lg-text-muted">Foto próximamente</p>
-            </div>
-          </motion.div>
+{/* ── Columna izquierda — foto de Santiago ── */}
+<motion.div 
+  variants={fadeUp || {}} // El || {} evita que rompa si fadeUp no está definido en este archivo
+  className="relative"
+>
+  <div
+    className="w-full flex items-end justify-center rounded-xl overflow-hidden"
+    style={{
+      aspectRatio: "4 / 5",
+      border: "1px solid rgba(63,200,122,0.15)",
+      position: "relative",
+      background: "transparent", // Aseguramos que no haya fondo sólido
+    }}
+  >
+    {/* Resplandor de fondo para dar profundidad */}
+    <div 
+      className="absolute inset-0 opacity-20"
+      style={{
+        background: "radial-gradient(circle at center, #3FC87A 0%, transparent 70%)",
+        filter: "blur(40px)",
+        zIndex: 0
+      }}
+    />
+
+    <img
+      src="/images/santiago/santiago.webp" 
+      alt="Santiago - Fundador de Level Growth"
+      className="w-full h-full object-contain object-bottom relative z-10"
+      style={{ display: "block" }}
+      fetchPriority="high" 
+    />
+  </div>
+</motion.div>
 
           {/* ── Columna derecha — texto ── */}
           <motion.div variants={staggerContainer} className="flex flex-col gap-6">

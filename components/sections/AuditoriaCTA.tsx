@@ -59,7 +59,7 @@ export function AuditoriaCTA() {
             </h2>
 
             <p className="font-body text-[1.05rem] text-[#7A8FA6] leading-[1.7]">
-              Ingresá la URL de tu sitio y te mostramos exactamente dónde perdés clientes — gratis, sin registro, sin tecnicismos.
+              Ingresá la URL de tu sitio y te mostramos exactamente dónde perdés clientes. Gratis, sin registro, sin tecnicismos.
             </p>
 
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">

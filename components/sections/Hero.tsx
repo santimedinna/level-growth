@@ -105,7 +105,7 @@ export function Hero() {
           style={anim("0.1s")}
           className="font-body text-[1.125rem] text-lg-text-secondary leading-[1.7] max-w-[560px] mx-auto mb-10"
         >
-          Descubrí exactamente dónde tu web pierde clientes — y cómo solucionarlo.
+          Descubrí exactamente dónde tu web pierde clientes y cómo solucionarlo.
         </p>
 
         {/* CTAs */}
