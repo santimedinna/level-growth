@@ -50,7 +50,7 @@ export function Santiago() {
     />
 
     <img
-      src="/images/santiago/santiago.webp" 
+      src="\images\Santiago\Santiago.webp" 
       alt="Santiago - Fundador de Level Growth"
       className="w-full h-full object-contain object-bottom relative z-10"
       style={{ display: "block" }}
