@@ -4,6 +4,8 @@ import { MDXRemote }            from "next-mdx-remote/rsc";
 import { getAllSlugs, getPostBySlug, formatDate } from "@/lib/mdx";
 import { Badge }                from "@/components/ui/Badge";
 import { Button }               from "@/components/ui/Button";
+import { SchemaScript }         from "@/components/ui/SchemaScript";
+import { buildArticleSchema }   from "@/lib/schema";
 
 /* ─── Componentes MDX personalizados ─────── */
 const mdxComponents = {
@@ -92,6 +94,13 @@ export default async function BlogPostPage({
   }
 
   return (
+    <>
+    <SchemaScript schema={buildArticleSchema({
+      slug,
+      title:         frontmatter.title,
+      description:   frontmatter.description,
+      datePublished: frontmatter.date,
+    })} />
     <article className="py-[clamp(5rem,12vw,10rem)] px-[clamp(1.5rem,5vw,4rem)]">
       <div className="max-w-[680px] mx-auto">
 
@@ -168,5 +177,6 @@ export default async function BlogPostPage({
 
       </div>
     </article>
+    </>
   );
 }

@@ -3,6 +3,8 @@ import { Syne, DM_Sans, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { SchemaScript } from "@/components/ui/SchemaScript";
+import { buildOrgWebsiteSchema } from "@/lib/schema";
 import "./globals.css";
 
 /* ─── WhatsApp flotante (solo mobile) ──────── */
@@ -94,6 +96,8 @@ export default function RootLayout({
             <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.554 4.118 1.528 5.849L.057 23.886a.5.5 0 0 0 .611.611l6.037-1.471A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.696-.528-5.228-1.448l-.374-.224-3.883.946.964-3.882-.236-.385A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
           </svg>
         </a>
+
+        <SchemaScript schema={buildOrgWebsiteSchema()} />
 
         {/* Microsoft Clarity */}
         <Script id="microsoft-clarity" strategy="afterInteractive">

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/Hero";
+import { SchemaScript } from "@/components/ui/SchemaScript";
+import { buildFAQSchema } from "@/lib/schema";
+import { faqs } from "@/lib/data/faq";
 
 /* ─── Secciones below-fold: lazy-load
    Cada dynamic() crea un chunk JS separado.
@@ -58,6 +61,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <SchemaScript schema={buildFAQSchema(faqs)} />
       <Hero />
       <Pain />
       <AuditoriaCTA />
