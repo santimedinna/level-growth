@@ -23,7 +23,7 @@ export default function ProyectosPage() {
       </div>
 
       {/* Grid de cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Rap Thai */}
         <a
@@ -85,14 +85,6 @@ export default function ProyectosPage() {
           </div>
         </a>
 
-        {/* Próximo proyecto placeholder */}
-        <div
-          className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[0.1] p-8"
-          style={{ background: "#0D1221", minHeight: 280 }}
-        >
-          <p className="font-body text-sm font-medium text-[#4A6070] mb-1">Próximo proyecto</p>
-          <p className="font-body text-xs" style={{ color: "rgba(74,96,112,0.6)" }}>En construcción</p>
-        </div>
 
       </div>
     </main>

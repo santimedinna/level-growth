@@ -26,35 +26,23 @@ export function Santiago() {
           className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
         >
 {/* ── Columna izquierda — foto de Santiago ── */}
-<motion.div 
-  variants={fadeUp || {}} // El || {} evita que rompa si fadeUp no está definido en este archivo
-  className="relative"
->
-  <div
-    className="w-full flex items-end justify-center rounded-xl overflow-hidden"
-    style={{
-      aspectRatio: "4 / 5",
-      border: "1px solid rgba(63,200,122,0.15)",
-      position: "relative",
-      background: "transparent", // Aseguramos que no haya fondo sólido
-    }}
-  >
-    {/* Resplandor de fondo para dar profundidad */}
-    <div 
-      className="absolute inset-0 opacity-20"
-      style={{
-        background: "radial-gradient(circle at center, #3FC87A 0%, transparent 70%)",
-        filter: "blur(40px)",
-        zIndex: 0
-      }}
-    />
-
+<motion.div variants={fadeUp} className="flex justify-center lg:justify-end">
+  <div className="relative w-48 sm:w-56 lg:w-64">
     <img
-      src="\images\Santiago\Santiago.webp" 
-      alt="Santiago - Fundador de Level Growth"
-      className="w-full h-full object-contain object-bottom relative z-10"
-      style={{ display: "block" }}
-      fetchPriority="high" 
+      src="/images/Santiago/Santiago.webp"
+      alt="Santiago Medina — Fundador de Level Growth"
+      className="w-full h-auto rounded-2xl object-cover"
+      style={{
+        opacity: 0.85,
+        mixBlendMode: "luminosity",
+        filter: "contrast(1.05)",
+      }}
+      fetchPriority="high"
+    />
+    {/* Gradiente inferior para fundir con el fondo */}
+    <div
+      className="absolute bottom-0 inset-x-0 h-1/3 rounded-b-2xl pointer-events-none"
+      style={{ background: "linear-gradient(to bottom, transparent, #080C14)" }}
     />
   </div>
 </motion.div>
