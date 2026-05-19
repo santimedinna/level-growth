@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/Hero";
 import { SchemaScript } from "@/components/ui/SchemaScript";
 import { buildFAQSchema } from "@/lib/schema";
-import { faqs } from "@/lib/data/faq";
+import { faqs } from "@/lib/data/business";
 
 /* ─── Secciones below-fold: lazy-load
    Cada dynamic() crea un chunk JS separado.

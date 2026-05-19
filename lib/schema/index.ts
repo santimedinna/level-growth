@@ -1,79 +1,112 @@
-const SITE_URL = "https://levelgrowthagency.com";
-const ORG_ID   = `${SITE_URL}/#organization`;
-const WEB_ID   = `${SITE_URL}/#website`;
+import {
+  SITE_URL,
+  businessInfo,
+  founder,
+  locations,
+  schemaServices,
+  socials,
+  brandAssets,
+} from "@/lib/data/business";
 
+const ORG_ID     = `${SITE_URL}/#organization`;
+const WEB_ID     = `${SITE_URL}/#website`;
+const FOUNDER_ID = `${SITE_URL}/#founder`;
+
+/* ─── Organization + WebSite + Person ─────── */
 export function buildOrgWebsiteSchema() {
+  const sameAs = [socials.instagram, socials.linkedin].filter(Boolean) as string[];
+
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": ["Organization", "LocalBusiness"],
-        "@id": ORG_ID,
-        name: "Level Growth",
-        url: SITE_URL,
-        logo: `${SITE_URL}/favicon.svg`,
-        email: "santiago@levelgrowthagency.com",
-        foundingDate: "2026",
-        description:
-          "Level Growth es una agencia de crecimiento que ayuda a negocios a generar más ventas optimizando su sitio web y su publicidad paga. Especialistas en funnel completo: desde el primer clic del ad hasta el cliente que paga.",
+        "@type":      ["Organization", "LocalBusiness"],
+        "@id":        ORG_ID,
+        name:         businessInfo.name,
+        url:          businessInfo.url,
+        logo:         `${SITE_URL}${brandAssets.logoUrl}`,
+        image:        brandAssets.imageUrl,
+        email:        businessInfo.email,
+        telephone:    businessInfo.telephone,
+        priceRange:   businessInfo.priceRange,
+        foundingDate: businessInfo.foundingDate,
+        description:  businessInfo.description,
+        knowsAbout:   founder.knowsAbout,
+        founder:      { "@id": FOUNDER_ID },
+        sameAs,
         address: {
-          "@type": "PostalAddress",
-          addressLocality: "Córdoba",
-          addressCountry: "AR",
+          "@type":         "PostalAddress",
+          addressLocality: locations.address.addressLocality,
+          postalCode:      locations.address.postalCode,
+          addressCountry:  locations.address.addressCountry,
         },
         geo: {
-          "@type": "GeoCoordinates",
-          latitude: -31.4201,
-          longitude: -64.1888,
+          "@type":   "GeoCoordinates",
+          latitude:  locations.geo.latitude,
+          longitude: locations.geo.longitude,
         },
-        areaServed: [
-          { "@type": "Country", name: "Argentina" },
-          { "@type": "Place",   name: "Latinoamérica" },
-        ],
-        sameAs: ["https://www.instagram.com/levelgrowthagency/"],
+        areaServed: locations.areaServed.map((a) => ({
+          "@type": a.type,
+          name:    a.name,
+        })),
         hasOfferCatalog: {
           "@type": "OfferCatalog",
-          name: "Servicios Level Growth",
-          itemListElement: [
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Desarrollo web" } },
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Auditoría web gratuita" } },
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Meta Ads" } },
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Google Ads" } },
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "SEO" } },
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "CRO — Optimización de conversión" } },
-            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Contenido para redes sociales" } },
-          ],
+          name:    "Servicios Level Growth",
+          itemListElement: schemaServices.map((s) => ({
+            "@type": "Offer",
+            itemOffered: {
+              "@type":       "Service",
+              name:          s.name,
+              description:   s.description,
+              serviceType:   s.serviceType,
+              provider:      { "@id": ORG_ID },
+              areaServed:    locations.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
+            },
+          })),
         },
       },
       {
-        "@type": "WebSite",
-        "@id": WEB_ID,
-        name: "Level Growth",
-        url: SITE_URL,
-        publisher: { "@id": ORG_ID },
+        "@type":     "WebSite",
+        "@id":       WEB_ID,
+        name:        businessInfo.name,
+        url:         businessInfo.url,
+        inLanguage:  "es-AR",
+        publisher:   { "@id": ORG_ID },
+      },
+      {
+        "@type":      "Person",
+        "@id":        FOUNDER_ID,
+        name:         founder.name,
+        jobTitle:     founder.jobTitle,
+        description:  founder.description,
+        worksFor:     { "@id": ORG_ID },
+        knowsAbout:   founder.knowsAbout,
+        sameAs:       [socials.instagram].filter(Boolean),
       },
     ],
   };
 }
 
+/* ─── FAQPage ─────────────────────────────── */
 export function buildFAQSchema(
   faqs: Array<{ question: string; answer: string }>
 ) {
   return {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
+    "@type":    "FAQPage",
     mainEntity: faqs.map((faq) => ({
       "@type": "Question",
-      name: faq.question,
+      name:    faq.question,
       acceptedAnswer: {
         "@type": "Answer",
-        text: faq.answer,
+        text:    faq.answer,
       },
     })),
   };
 }
 
-export function buildArticleSchema({
+/* ─── BlogPosting + BreadcrumbList (@graph) ── */
+export function buildBlogPostSchema({
   slug,
   title,
   description,
@@ -89,29 +122,44 @@ export function buildArticleSchema({
   const url = `${SITE_URL}/blog/${slug}`;
   return {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "@id": `${url}#article`,
-    headline:      title,
-    description,
-    url,
-    datePublished,
-    dateModified: dateModified ?? datePublished,
-    author:    { "@id": ORG_ID },
-    publisher: { "@id": ORG_ID },
+    "@graph": [
+      {
+        "@type":          "BlogPosting",
+        "@id":            `${url}#article`,
+        headline:         title,
+        description,
+        url,
+        inLanguage:       "es-AR",
+        datePublished,
+        dateModified:     dateModified ?? datePublished,
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        author:           { "@id": FOUNDER_ID },
+        publisher:        { "@id": ORG_ID },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Inicio", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Blog",   item: `${SITE_URL}/blog` },
+          { "@type": "ListItem", position: 3, name: title,    item: url },
+        ],
+      },
+    ],
   };
 }
 
+/* ─── BreadcrumbList standalone ──────────── */
 export function buildBreadcrumbSchema(
   items: Array<{ name: string; url: string }>
 ) {
   return {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    "@type":    "BreadcrumbList",
     itemListElement: items.map((item, i) => ({
-      "@type": "ListItem",
+      "@type":  "ListItem",
       position: i + 1,
-      name: item.name,
-      item: item.url,
+      name:     item.name,
+      item:     item.url,
     })),
   };
 }

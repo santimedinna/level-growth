@@ -1,6 +1,4 @@
-/* ─── Footer ──────────────────────────────────────────────────────────────
-   Número de WhatsApp y redes se completan cuando estén disponibles.
-   ───────────────────────────────────────────────────────────────────────── */
+import { businessInfo } from "@/lib/data/business";
 
 const serviciosLinks = [
   { label: "Auditoría de funnel",     href: "/servicios#auditoria" },
@@ -84,10 +82,10 @@ export function Footer() {
             <ul className="flex flex-col gap-3">
               <li>
                 <a
-                  href="mailto:contacto@levelgrowth.com.ar"
+                  href={`mailto:${businessInfo.email}`}
                   className="font-body text-sm text-lg-text-secondary hover:text-lg-text transition-colors duration-200"
                 >
-                  contacto@levelgrowth.com.ar
+                  {businessInfo.email}
                 </a>
               </li>
               {whatsapp && (

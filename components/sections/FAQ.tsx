@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { faqs } from "@/lib/data/faq";
+import { faqs } from "@/lib/data/business";
 
 /* ─── Animaciones ─────────────────────────── */
 const fadeUp = {

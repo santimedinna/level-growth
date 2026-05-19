@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { uiServices } from "@/lib/data/business";
 
 /* ─── Animaciones ─────────────────────────── */
 const fadeUp = {
@@ -50,37 +51,8 @@ function IconFunnel() {
   );
 }
 
-/* ─── Datos ───────────────────────────────── */
-const services = [
-  {
-    num:         "01",
-    icon:        <IconSearch />,
-    badge:       "Punto de partida",
-    title:       "Auditoría de funnel",
-    description: "Analizamos tu sitio web, tu publicidad activa y tu proceso de contacto. En 48 horas sabés exactamente qué está frenando tus ventas.",
-  },
-  {
-    num:         "02",
-    icon:        <IconCursor />,
-    badge:       "Más conversiones",
-    title:       "Optimización de landing",
-    description: "Rediseñamos o mejoramos tu sitio para que cada visitante tenga un motivo claro para contactarte. Copy, estructura y velocidad.",
-  },
-  {
-    num:         "03",
-    icon:        <IconChart />,
-    badge:       "Paid Media",
-    title:       "Gestión de publicidad",
-    description: "Creamos y gestionamos tus campañas en Google y Meta. Setup inicial + optimización mensual orientada a resultados medibles, no a impresiones.",
-  },
-  {
-    num:         "04",
-    icon:        <IconFunnel />,
-    badge:       "Todo incluido",
-    title:       "Funnel completo",
-    description: "Landing + publicidad + seguimiento. Un sistema donde cada pieza trabaja junto. Ideal para negocios que quieren escalar sin improvisar.",
-  },
-];
+/* ─── Íconos por índice (JSX no puede vivir en un data file) ── */
+const SERVICE_ICONS = [<IconSearch />, <IconCursor />, <IconChart />, <IconFunnel />];
 
 /* ─── Componente ──────────────────────────── */
 export function Services() {
@@ -125,7 +97,7 @@ export function Services() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {services.map((s) => (
+          {uiServices.map((s, i) => (
             <motion.div key={s.title} variants={fadeUp}>
               <Card interactive className="relative overflow-hidden h-full flex flex-col gap-4">
                 {/* Número decorativo de fondo */}
@@ -137,7 +109,7 @@ export function Services() {
                 </span>
                 {/* Ícono */}
                 <div className="w-10 h-10 rounded-lg bg-lg-green/10 text-lg-green flex items-center justify-center">
-                  {s.icon}
+                  {SERVICE_ICONS[i]}
                 </div>
                 {/* Badge + título */}
                 <div>

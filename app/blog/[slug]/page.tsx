@@ -5,7 +5,7 @@ import { getAllSlugs, getPostBySlug, formatDate } from "@/lib/mdx";
 import { Badge }                from "@/components/ui/Badge";
 import { Button }               from "@/components/ui/Button";
 import { SchemaScript }         from "@/components/ui/SchemaScript";
-import { buildArticleSchema }   from "@/lib/schema";
+import { buildBlogPostSchema }  from "@/lib/schema";
 
 /* ─── Componentes MDX personalizados ─────── */
 const mdxComponents = {
@@ -95,7 +95,7 @@ export default async function BlogPostPage({
 
   return (
     <>
-    <SchemaScript schema={buildArticleSchema({
+    <SchemaScript schema={buildBlogPostSchema({
       slug,
       title:         frontmatter.title,
       description:   frontmatter.description,
