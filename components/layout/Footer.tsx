@@ -100,6 +100,22 @@ export function Footer() {
                   </a>
                 </li>
               )}
+              <li>
+                <a
+                  href="/privacidad"
+                  className="font-body text-sm text-lg-text-secondary hover:text-lg-text transition-colors duration-200"
+                >
+                  Política de Privacidad
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/terminos"
+                  className="font-body text-sm text-lg-text-secondary hover:text-lg-text transition-colors duration-200"
+                >
+                  Términos y Condiciones
+                </a>
+              </li>
             </ul>
           </div>
         </div>
