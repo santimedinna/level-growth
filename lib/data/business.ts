@@ -123,28 +123,32 @@ export const uiServices = [
 /* ─── FAQs ────────────────────────────────── */
 export const faqs = [
   {
-    question: "¿Cuánto tiempo tarda la auditoría?",
-    answer:   "La auditoría web automática tarda menos de 60 segundos, la hacés vos mismo, gratis, en la herramienta. Si querés una auditoría profesional completa con análisis de tu publicidad y funnel, te entregamos el reporte en 48 horas hábiles.",
+    question: "Ya probé con una agencia y no me fue bien.",
+    answer:   "La mayoría de las agencias optimizan la pauta sin tocar la página. Es como ponerle más nafta a un auto con las ruedas pinchadas. Nosotros arrancamos por la web y el mensaje — si el destino del clic no funciona, la pauta más cara del mundo no te salva.",
   },
   {
-    question: "¿Necesito tener un sitio web para contratar el servicio de publicidad?",
-    answer:   "No necesariamente, pero si no tenés una landing optimizada, la publicidad va a funcionar muy por debajo de su potencial. Por eso generalmente recomendamos empezar con la landing.",
+    question: "No sé si tengo presupuesto para esto.",
+    answer:   "Cada mes que tu web pierde clientes tiene un costo real, aunque no aparezca en ninguna factura. Lo que pagás en publicidad para mandar gente a una página que no convierte es plata que ya perdiste. La auditoría es gratuita y te muestra si tiene sentido invertir antes de gastar un peso.",
   },
   {
-    question: "¿Cómo se cobra la gestión de publicidad?",
-    answer:   "Fee fijo mensual por la gestión, más el presupuesto de publicidad que definimos juntos. El presupuesto de ads lo manejás vos directamente con Google o Meta.",
+    question: "¿Cuánto tiempo tarda todo el proceso?",
+    answer:   "La auditoría automática tarda 60 segundos y podés hacerla vos mismo en levelgrowthagency.com/auditoria-web-gratis. La auditoría profesional completa con análisis de publicidad y funnel te la entregamos en 48 horas. Una landing completa se entrega en 7 a 10 días hábiles. Si sumás publicidad, el setup inicial es de una semana y después es gestión y optimización continua.",
+  },
+  {
+    question: "¿Y si no veo resultados?",
+    answer:   "Antes de proponerte nada hacemos la auditoría sin costo. Si no encontramos oportunidades reales de mejora, te lo decimos y no arrancamos. Una vez que empezamos, medimos semana a semana y ajustamos en base a datos. No trabajamos con suposiciones.",
+  },
+  {
+    question: "Mi negocio es chico, ¿esto es para mí?",
+    answer:   "Si ya tenés un producto que se vende y gente que llega a tu web, estás listo. El tamaño del negocio no importa — lo que importa es que haya un camino entre el clic y la venta que se pueda optimizar. Level Growth nació justamente para darle a negocios en crecimiento las herramientas que antes solo tenían las empresas grandes.",
   },
   {
     question: "¿Puedo contratar solo la web sin la publicidad?",
-    answer:   "Sí. Podés contratar el desarrollo de la landing o la auditoría web de forma independiente. Muchos clientes arrancan por ahí y después suman la gestión de publicidad cuando están listos.",
+    answer:   "Sí. Muchos arrancan por la landing y después suman publicidad cuando están listos. Lo que no hacemos es publicidad sin que la página esté preparada para recibir ese tráfico — sería quemar tu plata.",
   },
   {
-    question: "¿Qué pasa si no veo resultados?",
-    answer:   "Antes de arrancar cualquier proyecto hacemos la auditoría gratuita. Si no encontramos oportunidades reales, no te vamos a proponer trabajar. Una vez que arrancamos, medimos todo y ajustamos en base a datos reales.",
-  },
-  {
-    question: "¿Cómo arranco si no sé por dónde empezar?",
-    answer:   "El primer paso es la auditoría web gratuita. Tardás 60 segundos y ya tenés un diagnóstico concreto de dónde está el problema. Si querés ir más a fondo, agendamos una llamada sin costo y analizamos tu situación completa.",
+    question: "No sé por dónde empezar.",
+    answer:   "Por la auditoría gratuita en levelgrowthagency.com/auditoria-web-gratis. Tardás 60 segundos y ya sabés exactamente qué está frenando tus ventas. Si querés ir más a fondo, agendamos una llamada sin costo y analizamos tu situación completa. No necesitás saber de marketing para arrancar — para eso estamos nosotros.",
   },
 ];
 

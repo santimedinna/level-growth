@@ -15,6 +15,27 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
+/* ─── Convierte URLs planas en links clicables ── */
+function linkify(text: string): React.ReactNode {
+  const pattern = /(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[a-z0-9-]+(?:\/[a-z0-9-]+)*)*/gi;
+  const parts: React.ReactNode[] = [];
+  let last = 0;
+
+  for (const m of text.matchAll(pattern)) {
+    if (m.index! > last) parts.push(text.slice(last, m.index));
+    const raw = m[0];
+    const href = /^https?:\/\//.test(raw) ? raw : `https://${raw}`;
+    parts.push(
+      <a key={m.index} href={href} className="text-lg-green hover:underline">
+        {raw}
+      </a>
+    );
+    last = m.index! + raw.length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
 /* ─── Item del acordeón ───────────────────── */
 interface FAQItemProps {
   faq:       { question: string; answer: string };
@@ -68,7 +89,7 @@ function FAQItem({ faq, isOpen, onToggle }: FAQItemProps) {
             className="overflow-hidden"
           >
             <p className="font-body text-sm text-lg-text-secondary leading-[1.7] pb-5 max-w-[640px]">
-              {faq.answer}
+              {linkify(faq.answer)}
             </p>
           </motion.div>
         )}
@@ -99,7 +120,7 @@ export function FAQ() {
           variants={fadeUp}
           className="font-display font-semibold text-[clamp(1.75rem,3.5vw,2.25rem)] text-center text-lg-text mb-12"
         >
-          Preguntas frecuentes
+          Antes de hablar, esto es lo que la mayoría quiere saber
         </motion.h2>
 
         {/* Acordeón */}
