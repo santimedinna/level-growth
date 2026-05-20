@@ -44,19 +44,45 @@ export function CaseStudy() {
             variants={fadeUp}
             className="font-display font-semibold text-[clamp(1.75rem,3.5vw,2.25rem)] text-lg-text mb-8"
           >
-            Un caso real. Sin adornos.
+            La historia detrás de Level Growth
           </motion.h2>
 
-          {/* Historia — Parte A */}
+          {/* Historia — Párrafo 1 */}
+          <motion.p
+            variants={fadeUp}
+            className="font-body text-[1.125rem] text-lg-text-secondary leading-[1.7] max-w-[680px] mb-4"
+          >
+            En 2020 arranqué un negocio propio con{" "}
+            <span className="text-lg-text font-medium">$1.500 USD</span> de
+            inversión en Google Ads. Sin equipo, sin oficina, sin experiencia
+            previa en publicidad digital. Solo un producto que funcionaba y la
+            necesidad de hacerlo crecer.
+          </motion.p>
+
+          {/* Historia — Párrafo 2 */}
+          <motion.p
+            variants={fadeUp}
+            className="font-body text-[1.125rem] text-lg-text-secondary leading-[1.7] max-w-[680px] mb-4"
+          >
+            Durante 3 años manejé las campañas yo mismo. Aprendí a leer los datos,
+            a cortar lo que no funcionaba y a duplicar lo que sí. El negocio pasó
+            de ser yo solo en mi casa a una oficina con un socio y seis vendedores.
+            La facturación acumulada con Google Ads como único canal superó los{" "}
+            <span className="text-lg-text font-medium">$150.000 USD</span>.
+          </motion.p>
+
+          {/* Historia — Párrafo 3 */}
           <motion.p
             variants={fadeUp}
             className="font-body text-[1.125rem] text-lg-text-secondary leading-[1.7] max-w-[680px] mb-14"
           >
-            Tomamos un negocio que arrancó con{" "}
-            <span className="text-lg-text font-medium">$1.500 USD</span> en inversión
-            publicitaria y en 3 años generamos más de{" "}
-            <span className="text-lg-text font-medium">$150.000 USD</span> en facturación
-            usando Google Ads como único canal de adquisición.
+            El negocio cerró por problemas de gestión interna, no por falta de
+            clientes. Lo que me quedó fue la certeza de que un sistema de
+            ventas bien armado puede escalar cualquier negocio que tenga un
+            producto probado.{" "}
+            <span className="text-lg-text font-medium">
+              así nacio El Metodo Level Growth.
+            </span>
           </motion.p>
 
           {/* Métricas grandes */}

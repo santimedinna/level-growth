@@ -105,7 +105,7 @@ export function GrowthChart() {
       </svg>
 
       <p className="font-body text-[0.7rem] text-lg-text-muted text-center mt-3 tracking-[0.05em]">
-        Así crece un negocio con un funnel bien construido
+        Crecimiento real del negocio durante los 3 años de operación
       </p>
     </div>
   );
