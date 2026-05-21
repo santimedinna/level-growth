@@ -124,7 +124,7 @@ export const uiServices = [
 export const faqs = [
   {
     question: "Ya probé con una agencia y no me fue bien.",
-    answer:   "La mayoría de las agencias optimizan la pauta sin tocar la página. Es como ponerle más nafta a un auto con las ruedas pinchadas. Nosotros arrancamos por la web y el mensaje — si el destino del clic no funciona, la pauta más cara del mundo no te salva.",
+    answer:   "La mayoría de las agencias optimizan la pauta sin tocar la página. Es como ponerle más nafta a un auto con las ruedas pinchadas. Nosotros arrancamos por la web y el mensaje, si el destino del clic no funciona, la pauta más cara del mundo no te salva.",
   },
   {
     question: "No sé si tengo presupuesto para esto.",
@@ -140,15 +140,15 @@ export const faqs = [
   },
   {
     question: "Mi negocio es chico, ¿esto es para mí?",
-    answer:   "Si ya tenés un producto que se vende y gente que llega a tu web, estás listo. El tamaño del negocio no importa — lo que importa es que haya un camino entre el clic y la venta que se pueda optimizar. Level Growth nació justamente para darle a negocios en crecimiento las herramientas que antes solo tenían las empresas grandes.",
+    answer:   "Si ya tenés un producto que se vende y gente que llega a tu web, estás listo. El tamaño del negocio no importa, lo que importa es que haya un camino entre el clic y la venta que se pueda optimizar. Level Growth nació justamente para darle a negocios en crecimiento las herramientas que antes solo tenían las empresas grandes.",
   },
   {
     question: "¿Puedo contratar solo la web sin la publicidad?",
-    answer:   "Sí. Muchos arrancan por la landing y después suman publicidad cuando están listos. Lo que no hacemos es publicidad sin que la página esté preparada para recibir ese tráfico — sería quemar tu plata.",
+    answer:   "Sí. Muchos arrancan por la landing y después suman publicidad cuando están listos. Lo que no hacemos es publicidad sin que la página esté preparada para recibir ese tráfico, sería quemar tu plata.",
   },
   {
     question: "No sé por dónde empezar.",
-    answer:   "Por la auditoría gratuita en levelgrowthagency.com/auditoria-web-gratis. Tardás 60 segundos y ya sabés exactamente qué está frenando tus ventas. Si querés ir más a fondo, agendamos una llamada sin costo y analizamos tu situación completa. No necesitás saber de marketing para arrancar — para eso estamos nosotros.",
+    answer:   "Por la auditoría gratuita en levelgrowthagency.com/auditoria-web-gratis. Tardás 60 segundos y ya sabés exactamente qué está frenando tus ventas. Si querés ir más a fondo, agendamos una llamada sin costo y analizamos tu situación completa. No necesitás saber de marketing para arrancar, para eso estamos nosotros.",
   },
 ];
 

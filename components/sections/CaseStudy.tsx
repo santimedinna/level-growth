@@ -79,9 +79,9 @@ export function CaseStudy() {
             El negocio cerró por problemas de gestión interna, no por falta de
             clientes. Lo que me quedó fue la certeza de que un sistema de
             ventas bien armado puede escalar cualquier negocio que tenga un
-            producto probado.{" "}
+            producto probado. Así nacio{" "}
             <span className="text-lg-text font-medium">
-              así nacio El Metodo Level Growth.
+              El Metodo Level Growth.
             </span>
           </motion.p>
 
