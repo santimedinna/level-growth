@@ -28,6 +28,10 @@ const Santiago = dynamic(() =>
   import("@/components/sections/Santiago").then(m => ({ default: m.Santiago }))
 );
 
+const Testimonios = dynamic(() =>
+  import("@/components/sections/Testimonios").then(m => ({ default: m.Testimonios }))
+);
+
 const TrustLogos = dynamic(() =>
   import("@/components/sections/TrustLogos").then(m => ({ default: m.TrustLogos }))
 );
@@ -66,6 +70,7 @@ export default function Home() {
       <Pain />
       <AuditoriaCTA />
       <Showroom />
+      <Testimonios />
       <Santiago />
       <TrustLogos />
       <CaseStudy />
