@@ -97,14 +97,14 @@ function CardContent({
 function GoogleReviewsLink() {
   return (
     <motion.div
-      className="text-center mt-8 space-y-1"
+      className="text-center mt-8"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: 0.3 }}
     >
       <p className="font-body text-sm" style={{ color: "#7A8FA6" }}>
-        Mirá todas las reseñas en nuestro{" "}
+        ¿Trabajaste con nosotros?{" "}
         <a
           href="#"
           target="_blank"
@@ -112,14 +112,8 @@ function GoogleReviewsLink() {
           className="font-medium hover:underline transition-colors"
           style={{ color: "#3FC87A" }}
         >
-          perfil de Google →
+          Sumá tu opinión en Google →
         </a>
-      </p>
-      <p className="font-body text-xs" style={{ color: "#4A6070" }}>
-        ¿Trabajaste con nosotros?{" "}
-        <a href="#" className="hover:underline" style={{ color: "#7A8FA6" }}>
-          Sumá tu opinión
-        </a>.
       </p>
     </motion.div>
   );
@@ -159,17 +153,23 @@ export function Testimonios() {
           100% { background-position: -200% 0; }
         }
         @keyframes pulseGlow {
-          0%, 100% {
+          0% {
             box-shadow:
-              0 0 0 1px rgba(63,200,122,0.3),
-              0 0 20px rgba(63,200,122,0.08),
-              inset 0 0 30px rgba(63,200,122,0.04);
+              0 0 0 1px rgba(63,200,122,0.2),
+              0 0 12px rgba(63,200,122,0.04),
+              inset 0 0 20px rgba(63,200,122,0.02);
           }
           50% {
             box-shadow:
-              0 0 0 1px rgba(63,200,122,0.6),
-              0 0 32px rgba(63,200,122,0.2),
-              inset 0 0 40px rgba(63,200,122,0.12);
+              0 0 0 1.5px rgba(63,200,122,0.8),
+              0 0 40px rgba(63,200,122,0.25),
+              inset 0 0 50px rgba(63,200,122,0.15);
+          }
+          100% {
+            box-shadow:
+              0 0 0 1px rgba(63,200,122,0.2),
+              0 0 12px rgba(63,200,122,0.04),
+              inset 0 0 20px rgba(63,200,122,0.02);
           }
         }
         .mobile-card-glow {
@@ -263,7 +263,6 @@ export function Testimonios() {
               className="relative rounded-xl mobile-card-glow"
               style={{
                 background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                border: "1px solid rgba(63,200,122,0.25)",
               }}
             >
               <div className="relative flex flex-col gap-5 rounded-xl p-5">
