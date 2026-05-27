@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TESTIMONIOS = [
@@ -30,22 +30,31 @@ const TESTIMONIOS = [
   },
 ];
 
-/* ─── Contenido de cada card ─────────────── */
-function CardContent({ t }: { t: typeof TESTIMONIOS[0] }) {
+/* ─── Contenido interno de cada card ─────── */
+function CardContent({
+  t,
+  index,
+  keyForStars,
+}: {
+  t: typeof TESTIMONIOS[0];
+  index: number;
+  keyForStars?: number;
+}) {
   return (
     <>
-      {/* Estrellas */}
-      <div className="flex gap-1">
+      {/* Estrellas en cascada */}
+      <div className="flex gap-1 relative z-10">
         {[...Array(5)].map((_, i) => (
           <motion.svg
-            key={i}
+            key={`${keyForStars ?? index}-${i}`}
             width="16"
             height="16"
             viewBox="0 0 24 24"
             fill="#F59E0B"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.06, duration: 0.2 }}
+            initial={{ opacity: 0, scale: 0, rotate: -30 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ delay: i * 0.08, duration: 0.3, ease: "backOut" }}
           >
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </motion.svg>
@@ -53,32 +62,32 @@ function CardContent({ t }: { t: typeof TESTIMONIOS[0] }) {
       </div>
 
       {/* Texto */}
-      <p className="font-body text-[0.95rem] leading-[1.7]" style={{ color: "#7A8FA6" }}>
+      <p className="font-body text-[0.95rem] leading-[1.7] relative z-10" style={{ color: "#7A8FA6" }}>
         &ldquo;{t.texto}&rdquo;
       </p>
 
       {/* Métrica */}
       {t.metrica && (
-        <p className="font-mono text-[0.75rem]" style={{ color: "#3FC87A" }}>
+        <p className="font-mono text-[0.75rem] relative z-10" style={{ color: "#3FC87A" }}>
           {t.metrica}
         </p>
       )}
 
-      {/* Footer de card */}
-      <div className="border-t border-white/[0.06] pt-4 mt-auto flex items-center gap-3">
+      {/* Footer */}
+      <div className="border-t border-white/[0.06] pt-4 mt-auto flex items-center gap-3 relative z-10">
         {t.esLogo ? (
           <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
-            <img src={t.imagen} alt={t.negocio} width={32} height={32} className="object-contain" />
+            <img src={t.imagen} alt={t.negocio} className="w-8 h-8 object-contain" />
           </div>
         ) : (
-          <img
-            src={t.imagen}
-            alt={t.nombre}
-            width={40}
-            height={40}
-            className="rounded-full object-cover shrink-0 border border-white/10"
-            style={{ width: 40, height: 40 }}
-          />
+          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/10 bg-white/5">
+            <img
+              src={t.imagen}
+              alt={t.nombre}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: "center" }}
+            />
+          </div>
         )}
         <div>
           <p className="font-body font-medium text-white text-sm">{t.nombre}</p>
@@ -91,24 +100,23 @@ function CardContent({ t }: { t: typeof TESTIMONIOS[0] }) {
 
 /* ─── Componente principal ────────────────── */
 export function Testimonios() {
-  const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const intervalRef         = useRef<NodeJS.Timeout | null>(null);
+  const [active, setActive]       = useState(0);
+  const [paused, setPaused]       = useState(false);
+  const [hoveredCard, setHovered] = useState<number | null>(null);
 
-  /* Autoplay */
+  /* Autoplay (solo relevante en mobile) */
   useEffect(() => {
     if (paused) return;
-    intervalRef.current = setInterval(() => {
+    const id = setInterval(() => {
       setActive(prev => (prev + 1) % TESTIMONIOS.length);
     }, 5000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => clearInterval(id);
   }, [paused, active]);
 
-  const goTo = (index: number) => {
-    setActive(index);
-    if (intervalRef.current) clearInterval(intervalRef.current);
+  const navigateTo = (i: number) => {
+    setActive(i);
+    setPaused(true);
+    setTimeout(() => setPaused(false), 3000);
   };
 
   return (
@@ -117,6 +125,18 @@ export function Testimonios() {
       className="px-[clamp(1.5rem,5vw,4rem)] py-[clamp(4rem,10vw,8rem)]"
       style={{ background: "#080C14" }}
     >
+      {/* Keyframes inyectados una sola vez */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes lg-shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        @keyframes lg-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+      ` }} />
+
       <div className="max-w-[1200px] mx-auto">
 
         {/* Encabezado */}
@@ -135,35 +155,46 @@ export function Testimonios() {
           </h2>
         </motion.div>
 
-        {/* ── Desktop: 3 cards simultáneas ── */}
-        <div
-          className="hidden md:grid md:grid-cols-3 gap-6"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
+        {/* ── DESKTOP: 3 cards con spotlight ── */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6">
           {TESTIMONIOS.map((t, i) => (
             <motion.div
               key={t.nombre}
-              onClick={() => goTo(i)}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
               animate={{
-                scale:   active === i ? 1    : 0.97,
-                opacity: active === i ? 1    : 0.5,
+                y:       hoveredCard === i ? -4 : 0,
+                opacity: hoveredCard === null || hoveredCard === i ? 1 : 0.5,
+                filter:  hoveredCard === null || hoveredCard === i
+                  ? "saturate(1)"
+                  : "saturate(0.5)",
               }}
-              whileHover={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="flex flex-col gap-5 rounded-xl p-6 border cursor-pointer"
+              className="relative flex flex-col gap-5 rounded-xl p-6 border cursor-default overflow-hidden group"
               style={{
-                background:   "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                borderColor:  active === i ? "rgba(63,200,122,0.4)" : "rgba(255,255,255,0.08)",
-                boxShadow:    active === i ? "0 0 24px rgba(63,200,122,0.08)" : "none",
+                background:  "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                borderColor: hoveredCard === i ? "rgba(63,200,122,0.4)" : "rgba(255,255,255,0.08)",
+                boxShadow:   hoveredCard === i ? "0 8px 32px rgba(63,200,122,0.15)" : "none",
+                transition:  "border-color 0.3s, box-shadow 0.3s",
               }}
             >
-              <CardContent t={t} />
+              {/* Shimmer sweep en hover */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  opacity:            hoveredCard === i ? 1 : 0,
+                  background:         "linear-gradient(120deg, transparent 30%, rgba(63,200,122,0.08) 50%, transparent 70%)",
+                  backgroundSize:     "200% 100%",
+                  animation:          hoveredCard === i ? "lg-shimmer 1.2s ease-in-out" : "none",
+                  transition:         "opacity 0.3s",
+                }}
+              />
+              <CardContent t={t} index={i} />
             </motion.div>
           ))}
         </div>
 
-        {/* ── Mobile: una card por vez con drag ── */}
+        {/* ── MOBILE: una card con running border ── */}
         <div className="md:hidden overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
@@ -178,39 +209,55 @@ export function Testimonios() {
               onDragStart={() => setPaused(true)}
               onDragEnd={(_, info) => {
                 if (info.offset.x < -50) {
-                  goTo((active + 1) % TESTIMONIOS.length);
+                  setActive((active + 1) % TESTIMONIOS.length);
                 } else if (info.offset.x > 50) {
-                  goTo((active - 1 + TESTIMONIOS.length) % TESTIMONIOS.length);
+                  setActive((active - 1 + TESTIMONIOS.length) % TESTIMONIOS.length);
                 }
-                setPaused(false);
+                setTimeout(() => setPaused(false), 3000);
               }}
-              className="flex flex-col gap-5 rounded-xl p-5 border"
+              className="relative flex flex-col gap-5 rounded-xl p-5 overflow-hidden"
               style={{
-                background:  "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                borderColor: "rgba(63,200,122,0.4)",
-                boxShadow:   "0 0 24px rgba(63,200,122,0.08)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
               }}
             >
-              <CardContent t={TESTIMONIOS[active]} />
+              {/* Running border — gradiente cónico girando */}
+              <div
+                className="absolute inset-0 rounded-xl pointer-events-none"
+                style={{
+                  padding:             "1px",
+                  background:          "conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(63,200,122,0.8) 85%, transparent 100%)",
+                  animation:           "lg-spin 4s linear infinite",
+                  WebkitMask:          "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite:       "exclude",
+                }}
+              />
+              {/* Borde base translúcido */}
+              <div
+                className="absolute inset-0 rounded-xl border pointer-events-none"
+                style={{ borderColor: "rgba(63,200,122,0.2)" }}
+              />
+
+              <CardContent t={TESTIMONIOS[active]} index={active} keyForStars={active} />
             </motion.div>
           </AnimatePresence>
-        </div>
 
-        {/* Indicadores */}
-        <div className="flex justify-center items-center gap-2 mt-8">
-          {TESTIMONIOS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Ir al testimonio ${i + 1}`}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width:      active === i ? "24px" : "8px",
-                height:     "8px",
-                background: active === i ? "#3FC87A" : "rgba(255,255,255,0.2)",
-              }}
-            />
-          ))}
+          {/* Indicadores — solo mobile */}
+          <div className="flex justify-center items-center gap-2 mt-6">
+            {TESTIMONIOS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => navigateTo(i)}
+                aria-label={`Ver testimonio ${i + 1}`}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width:      active === i ? "24px" : "8px",
+                  height:     "8px",
+                  background: active === i ? "#3FC87A" : "rgba(255,255,255,0.2)",
+                }}
+              />
+            ))}
+          </div>
         </div>
 
       </div>
