@@ -97,3 +97,48 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Sonar giratorio — borde animado para card mobile de testimonios ── */
+@keyframes border-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.testimonio-card-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+}
+
+.testimonio-card-wrapper::before {
+  content: "";
+  position: absolute;
+  top: -25%;
+  left: -25%;
+  width: 150%;
+  height: 150%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(63, 200, 122, 0.8) 30deg,
+    rgba(63, 200, 122, 1) 50deg,
+    rgba(63, 200, 122, 0.8) 70deg,
+    transparent 100deg
+  );
+  animation: border-spin 7s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.testimonio-card-content {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  border-radius: 11px;
+  background: #0D1221;
+  z-index: 1;
+  overflow: hidden;
+}
