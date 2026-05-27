@@ -7,10 +7,9 @@ const TESTIMONIOS = [
   {
     nombre:  "Gian",
     negocio: "La Jungla Encantada",
-    imagen:  "/images/testimonios/la-jungla-logo.webp",
+    imagen:  "/images/testimonios/logo-la-jungla-encantada.webp",
     esLogo:  true,
     texto:   "Sos crack Santi. La página quedó de 10 y anda muy bien. Ya puedo jubilar tranquilo el linktree viejo, ahora me encuentra más gente y cuando me mandan mensajes ya saben qué juego quieren alquilar.",
-    metrica: null,
   },
   {
     nombre:  "Alejandro",
@@ -18,15 +17,13 @@ const TESTIMONIOS = [
     imagen:  "/images/testimonios/kerby.webp",
     esLogo:  false,
     texto:   "Tengo el taller hace más de 30 años y nunca había pasado un verano tan flojo. Santiago me armó el perfil de Google y empezó a aparecer gente nueva. El primer mes tuve varias consultas y clientes que llegaron por Google Maps. La verdad me dio un poco de aire.",
-    metrica: "428 visitas · 47 cómo llegar · 4 llamadas · primer mes",
   },
   {
     nombre:  "Nico",
     negocio: "Rap Thai",
-    imagen:  "/images/testimonios/nico.webp",
+    imagen:  "/images/testimonios/logo-rap-thai.webp",
     esLogo:  false,
     texto:   "Santi logro mostrar exactamente lo que se vive en el Rap Thai. La página y el instagram transmiten la energía de los chicos y se nota cuando llega gente nueva o vamos a un evento.",
-    metrica: null,
   },
 ];
 
@@ -34,10 +31,12 @@ const TESTIMONIOS = [
 function CardContent({
   t,
   index,
+  isActive,
   keyForStars,
 }: {
   t: typeof TESTIMONIOS[0];
   index: number;
+  isActive: boolean;
   keyForStars?: number;
 }) {
   return (
@@ -47,14 +46,14 @@ function CardContent({
         {[...Array(5)].map((_, i) => (
           <motion.svg
             key={`${keyForStars ?? index}-${i}`}
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="#F59E0B"
             initial={{ opacity: 0, scale: 0, rotate: -30 }}
             whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
             viewport={{ once: false, amount: 0.3 }}
-            transition={{ delay: i * 0.08, duration: 0.3, ease: "backOut" }}
+            transition={{ delay: i * 0.12, duration: 0.4, ease: "backOut" }}
           >
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </motion.svg>
@@ -62,16 +61,12 @@ function CardContent({
       </div>
 
       {/* Texto */}
-      <p className="font-body text-[0.95rem] leading-[1.7] relative z-10" style={{ color: "#7A8FA6" }}>
+      <p
+        className="font-body text-[0.95rem] leading-[1.7] relative z-10 transition-colors duration-300"
+        style={{ color: isActive ? "#C5D0DC" : "#7A8FA6" }}
+      >
         &ldquo;{t.texto}&rdquo;
       </p>
-
-      {/* Métrica */}
-      {t.metrica && (
-        <p className="font-mono text-[0.75rem] relative z-10" style={{ color: "#3FC87A" }}>
-          {t.metrica}
-        </p>
-      )}
 
       {/* Footer */}
       <div className="border-t border-white/[0.06] pt-4 mt-auto flex items-center gap-3 relative z-10">
@@ -98,18 +93,43 @@ function CardContent({
   );
 }
 
+/* ─── Link a reseñas de Google ────────────── */
+function GoogleReviewsLink() {
+  return (
+    <motion.p
+      className="text-center font-body text-sm mt-10"
+      style={{ color: "#4A6070" }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: 0.3 }}
+    >
+      Las reseñas completas están en nuestro{" "}
+      <a
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-medium hover:underline transition-colors"
+        style={{ color: "#3FC87A" }}
+      >
+        perfil de Google →
+      </a>
+    </motion.p>
+  );
+}
+
 /* ─── Componente principal ────────────────── */
 export function Testimonios() {
   const [active, setActive]       = useState(0);
   const [paused, setPaused]       = useState(false);
   const [hoveredCard, setHovered] = useState<number | null>(null);
 
-  /* Autoplay (solo relevante en mobile) */
+  /* Autoplay — solo activo en mobile */
   useEffect(() => {
     if (paused) return;
     const id = setInterval(() => {
       setActive(prev => (prev + 1) % TESTIMONIOS.length);
-    }, 5000);
+    }, 7000);
     return () => clearInterval(id);
   }, [paused, active]);
 
@@ -125,15 +145,32 @@ export function Testimonios() {
       className="px-[clamp(1.5rem,5vw,4rem)] py-[clamp(4rem,10vw,8rem)]"
       style={{ background: "#080C14" }}
     >
-      {/* Keyframes inyectados una sola vez */}
+      {/* Keyframes */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes lg-shimmer {
+        @property --glow-x {
+          syntax: '<percentage>';
+          inherits: false;
+          initial-value: 50%;
+        }
+        @property --glow-y {
+          syntax: '<percentage>';
+          inherits: false;
+          initial-value: 0%;
+        }
+        @keyframes shimmer {
           0%   { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
-        @keyframes lg-spin {
+        @keyframes orbit {
           from { transform: rotate(0deg); }
           to   { transform: rotate(360deg); }
+        }
+        @keyframes glowOrbit {
+          0%   { --glow-x: 50%;  --glow-y: 0%;   }
+          25%  { --glow-x: 100%; --glow-y: 50%;  }
+          50%  { --glow-x: 50%;  --glow-y: 100%; }
+          75%  { --glow-x: 0%;   --glow-y: 50%;  }
+          100% { --glow-x: 50%;  --glow-y: 0%;   }
         }
       ` }} />
 
@@ -170,7 +207,7 @@ export function Testimonios() {
                   : "saturate(0.5)",
               }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="relative flex flex-col gap-5 rounded-xl p-6 border cursor-default overflow-hidden group"
+              className="relative flex flex-col gap-5 rounded-xl p-6 border cursor-default overflow-hidden"
               style={{
                 background:  "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
                 borderColor: hoveredCard === i ? "rgba(63,200,122,0.4)" : "rgba(255,255,255,0.08)",
@@ -182,19 +219,24 @@ export function Testimonios() {
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  opacity:            hoveredCard === i ? 1 : 0,
-                  background:         "linear-gradient(120deg, transparent 30%, rgba(63,200,122,0.08) 50%, transparent 70%)",
-                  backgroundSize:     "200% 100%",
-                  animation:          hoveredCard === i ? "lg-shimmer 1.2s ease-in-out" : "none",
-                  transition:         "opacity 0.3s",
+                  opacity:        hoveredCard === i ? 1 : 0,
+                  background:     "linear-gradient(120deg, transparent 30%, rgba(63,200,122,0.08) 50%, transparent 70%)",
+                  backgroundSize: "200% 100%",
+                  animation:      hoveredCard === i ? "shimmer 1.2s ease-in-out" : "none",
+                  transition:     "opacity 0.3s",
                 }}
               />
-              <CardContent t={t} index={i} />
+              <CardContent t={t} index={i} isActive={hoveredCard === i} />
             </motion.div>
           ))}
         </div>
 
-        {/* ── MOBILE: una card con running border ── */}
+        {/* Link Google — desktop */}
+        <div className="hidden md:block">
+          <GoogleReviewsLink />
+        </div>
+
+        {/* ── MOBILE: una card con borde orbitando ── */}
         <div className="md:hidden overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
@@ -215,30 +257,50 @@ export function Testimonios() {
                 }
                 setTimeout(() => setPaused(false), 3000);
               }}
-              className="relative flex flex-col gap-5 rounded-xl p-5 overflow-hidden"
-              style={{
-                background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-              }}
+              className="relative rounded-xl overflow-hidden"
             >
-              {/* Running border — gradiente cónico girando */}
+              {/* Borde con luz orbitando */}
               <div
                 className="absolute inset-0 rounded-xl pointer-events-none"
                 style={{
-                  padding:             "1px",
-                  background:          "conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(63,200,122,0.8) 85%, transparent 100%)",
-                  animation:           "lg-spin 4s linear infinite",
+                  padding:             "1.5px",
+                  background:          "conic-gradient(from 0deg, transparent 0%, transparent 50%, rgba(63,200,122,0.4) 65%, rgba(63,200,122,1) 75%, rgba(63,200,122,0.4) 85%, transparent 100%)",
+                  animation:           "orbit 6s linear",
+                  animationIterationCount: 1,
                   WebkitMask:          "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
                   WebkitMaskComposite: "xor",
                   maskComposite:       "exclude",
                 }}
               />
-              {/* Borde base translúcido */}
+
+              {/* Borde base verde tenue */}
               <div
                 className="absolute inset-0 rounded-xl border pointer-events-none"
-                style={{ borderColor: "rgba(63,200,122,0.2)" }}
+                style={{ borderColor: "rgba(63,200,122,0.25)" }}
               />
 
-              <CardContent t={TESTIMONIOS[active]} index={active} keyForStars={active} />
+              {/* Glow interno orbitando */}
+              <div
+                className="absolute inset-0 rounded-xl pointer-events-none"
+                style={{
+                  background:          "radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 0%), rgba(63,200,122,0.18) 0%, transparent 50%)",
+                  animation:           "glowOrbit 6s linear",
+                  animationIterationCount: 1,
+                }}
+              />
+
+              {/* Contenido */}
+              <div
+                className="relative flex flex-col gap-5 rounded-xl p-5"
+                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))" }}
+              >
+                <CardContent
+                  t={TESTIMONIOS[active]}
+                  index={active}
+                  isActive={true}
+                  keyForStars={active}
+                />
+              </div>
             </motion.div>
           </AnimatePresence>
 
@@ -258,6 +320,9 @@ export function Testimonios() {
               />
             ))}
           </div>
+
+          {/* Link Google — mobile */}
+          <GoogleReviewsLink />
         </div>
 
       </div>
