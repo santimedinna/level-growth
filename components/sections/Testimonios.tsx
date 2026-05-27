@@ -96,25 +96,32 @@ function CardContent({
 /* ─── Link a reseñas de Google ────────────── */
 function GoogleReviewsLink() {
   return (
-    <motion.p
-      className="text-center font-body text-sm mt-10"
-      style={{ color: "#4A6070" }}
+    <motion.div
+      className="text-center mt-8 space-y-1"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: 0.3 }}
     >
-      Las reseñas completas están en nuestro{" "}
-      <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-medium hover:underline transition-colors"
-        style={{ color: "#3FC87A" }}
-      >
-        perfil de Google →
-      </a>
-    </motion.p>
+      <p className="font-body text-sm" style={{ color: "#7A8FA6" }}>
+        Mirá todas las reseñas en nuestro{" "}
+        <a
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium hover:underline transition-colors"
+          style={{ color: "#3FC87A" }}
+        >
+          perfil de Google →
+        </a>
+      </p>
+      <p className="font-body text-xs" style={{ color: "#4A6070" }}>
+        ¿Trabajaste con nosotros?{" "}
+        <a href="#" className="hover:underline" style={{ color: "#7A8FA6" }}>
+          Sumá tu opinión
+        </a>.
+      </p>
+    </motion.div>
   );
 }
 
@@ -147,30 +154,27 @@ export function Testimonios() {
     >
       {/* Keyframes */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @property --glow-x {
-          syntax: '<percentage>';
-          inherits: false;
-          initial-value: 50%;
-        }
-        @property --glow-y {
-          syntax: '<percentage>';
-          inherits: false;
-          initial-value: 0%;
-        }
         @keyframes shimmer {
           0%   { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
-        @keyframes orbit {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
+        @keyframes pulseGlow {
+          0%, 100% {
+            box-shadow:
+              0 0 0 1px rgba(63,200,122,0.3),
+              0 0 20px rgba(63,200,122,0.08),
+              inset 0 0 30px rgba(63,200,122,0.04);
+          }
+          50% {
+            box-shadow:
+              0 0 0 1px rgba(63,200,122,0.6),
+              0 0 32px rgba(63,200,122,0.2),
+              inset 0 0 40px rgba(63,200,122,0.12);
+          }
         }
-        @keyframes glowOrbit {
-          0%   { --glow-x: 50%;  --glow-y: 0%;   }
-          25%  { --glow-x: 100%; --glow-y: 50%;  }
-          50%  { --glow-x: 50%;  --glow-y: 100%; }
-          75%  { --glow-x: 0%;   --glow-y: 50%;  }
-          100% { --glow-x: 50%;  --glow-y: 0%;   }
+        .mobile-card-glow {
+          animation: pulseGlow 6s ease-in-out;
+          animation-iteration-count: 1;
         }
       ` }} />
 
@@ -248,7 +252,6 @@ export function Testimonios() {
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
-              onDragStart={() => setPaused(true)}
               onDragEnd={(_, info) => {
                 if (info.offset.x < -50) {
                   setActive((active + 1) % TESTIMONIOS.length);
@@ -257,43 +260,13 @@ export function Testimonios() {
                 }
                 setTimeout(() => setPaused(false), 3000);
               }}
-              className="relative rounded-xl overflow-hidden"
+              className="relative rounded-xl mobile-card-glow"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px solid rgba(63,200,122,0.25)",
+              }}
             >
-              {/* Borde con luz orbitando */}
-              <div
-                className="absolute inset-0 rounded-xl pointer-events-none"
-                style={{
-                  padding:             "1.5px",
-                  background:          "conic-gradient(from 0deg, transparent 0%, transparent 50%, rgba(63,200,122,0.4) 65%, rgba(63,200,122,1) 75%, rgba(63,200,122,0.4) 85%, transparent 100%)",
-                  animation:           "orbit 6s linear",
-                  animationIterationCount: 1,
-                  WebkitMask:          "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                  WebkitMaskComposite: "xor",
-                  maskComposite:       "exclude",
-                }}
-              />
-
-              {/* Borde base verde tenue */}
-              <div
-                className="absolute inset-0 rounded-xl border pointer-events-none"
-                style={{ borderColor: "rgba(63,200,122,0.25)" }}
-              />
-
-              {/* Glow interno orbitando */}
-              <div
-                className="absolute inset-0 rounded-xl pointer-events-none"
-                style={{
-                  background:          "radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 0%), rgba(63,200,122,0.18) 0%, transparent 50%)",
-                  animation:           "glowOrbit 6s linear",
-                  animationIterationCount: 1,
-                }}
-              />
-
-              {/* Contenido */}
-              <div
-                className="relative flex flex-col gap-5 rounded-xl p-5"
-                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))" }}
-              >
+              <div className="relative flex flex-col gap-5 rounded-xl p-5">
                 <CardContent
                   t={TESTIMONIOS[active]}
                   index={active}
@@ -305,7 +278,7 @@ export function Testimonios() {
           </AnimatePresence>
 
           {/* Indicadores — solo mobile */}
-          <div className="flex justify-center items-center gap-2 mt-6">
+          <div className="flex justify-center items-center gap-1.5 mt-5">
             {TESTIMONIOS.map((_, i) => (
               <button
                 key={i}
@@ -313,8 +286,8 @@ export function Testimonios() {
                 aria-label={`Ver testimonio ${i + 1}`}
                 className="rounded-full transition-all duration-300"
                 style={{
-                  width:      active === i ? "24px" : "8px",
-                  height:     "8px",
+                  width:      active === i ? "20px" : "5px",
+                  height:     "5px",
                   background: active === i ? "#3FC87A" : "rgba(255,255,255,0.2)",
                 }}
               />
