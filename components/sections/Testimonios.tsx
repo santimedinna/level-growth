@@ -239,24 +239,54 @@ export function Testimonios() {
               }}
               className="testimonio-card-wrapper"
             >
-              {/* SVG border trace — stroke-dashoffset garantiza raya de tamaño constante */}
+              {/* SVG cometa — cola tenue + cuerpo + cabeza brillante */}
               <svg
                 aria-hidden="true"
                 className="absolute inset-0 pointer-events-none"
                 style={{ width: "100%", height: "100%", zIndex: 2 }}
               >
+                {/* Contorno base siempre visible */}
                 <rect
-                  x="1" y="1"
-                  rx="11" ry="11"
+                  x="1" y="1" rx="11" ry="11"
                   fill="none"
-                  stroke="#3FC87A"
-                  strokeWidth="2"
-                  strokeDasharray="60 2000"
-                  strokeLinecap="round"
+                  stroke="rgba(63,200,122,0.12)"
+                  strokeWidth="1"
+                  style={{ width: "calc(100% - 2px)", height: "calc(100% - 2px)" }}
+                />
+                {/* Cola — larga y tenue */}
+                <rect
+                  x="1" y="1" rx="11" ry="11"
+                  fill="none" stroke="#3FC87A"
+                  strokeWidth="1.5" strokeLinecap="round"
+                  pathLength={100} strokeDasharray="22 78" strokeOpacity={0.15}
                   style={{
-                    width: "calc(100% - 2px)",
-                    height: "calc(100% - 2px)",
+                    width: "calc(100% - 2px)", height: "calc(100% - 2px)",
                     animation: "border-trace 7s linear infinite",
+                    animationDelay: "-4.5s",
+                  }}
+                />
+                {/* Cuerpo — mediano */}
+                <rect
+                  x="1" y="1" rx="11" ry="11"
+                  fill="none" stroke="#3FC87A"
+                  strokeWidth="2" strokeLinecap="round"
+                  pathLength={100} strokeDasharray="12 88" strokeOpacity={0.5}
+                  style={{
+                    width: "calc(100% - 2px)", height: "calc(100% - 2px)",
+                    animation: "border-trace 7s linear infinite",
+                    animationDelay: "-5.6s",
+                  }}
+                />
+                {/* Cabeza — corta y brillante */}
+                <rect
+                  x="1" y="1" rx="11" ry="11"
+                  fill="none" stroke="#B8F5D4"
+                  strokeWidth="2.5" strokeLinecap="round"
+                  pathLength={100} strokeDasharray="5 95" strokeOpacity={1}
+                  style={{
+                    width: "calc(100% - 2px)", height: "calc(100% - 2px)",
+                    animation: "border-trace 7s linear infinite",
+                    animationDelay: "-6.3s",
                   }}
                 />
               </svg>
