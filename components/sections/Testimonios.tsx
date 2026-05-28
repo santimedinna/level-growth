@@ -239,6 +239,27 @@ export function Testimonios() {
               }}
               className="testimonio-card-wrapper"
             >
+              {/* SVG border trace — stroke-dashoffset garantiza raya de tamaño constante */}
+              <svg
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none"
+                style={{ width: "100%", height: "100%", zIndex: 2 }}
+              >
+                <rect
+                  x="1" y="1"
+                  rx="11" ry="11"
+                  fill="none"
+                  stroke="#3FC87A"
+                  strokeWidth="2"
+                  strokeDasharray="60 2000"
+                  strokeLinecap="round"
+                  style={{
+                    width: "calc(100% - 2px)",
+                    height: "calc(100% - 2px)",
+                    animation: "border-trace 7s linear infinite",
+                  }}
+                />
+              </svg>
               <div className="testimonio-card-content relative flex flex-col gap-5 p-5">
                 <CardContent
                   t={TESTIMONIOS[active]}

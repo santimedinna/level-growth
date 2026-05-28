@@ -98,45 +98,21 @@ body {
   background-clip: text;
 }
 
-/* ── Sonar giratorio — borde animado para card mobile de testimonios ── */
-@keyframes border-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
+/* ── Borde animado — stroke-dashoffset para card mobile de testimonios ── */
 .testimonio-card-wrapper {
   position: relative;
   border-radius: 12px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
   overflow: hidden;
   isolation: isolate;
 }
 
-.testimonio-card-wrapper::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  transform: translate(-50%, -50%);
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgba(63, 200, 122, 0.8) 30deg,
-    rgba(63, 200, 122, 1) 50deg,
-    rgba(63, 200, 122, 0.8) 70deg,
-    transparent 100deg
-  );
-  animation: border-spin 7s linear infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
 .testimonio-card-content {
   position: relative;
-  border-radius: 11px;
-  background: #0D1221;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
   z-index: 1;
+}
+
+@keyframes border-trace {
+  to { stroke-dashoffset: -2000; }
 }
