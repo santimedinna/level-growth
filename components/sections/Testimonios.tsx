@@ -125,13 +125,21 @@ export function Testimonios() {
   const [active, setActive]       = useState(0);
   const [paused, setPaused]       = useState(false);
   const [hoveredCard, setHovered] = useState<number | null>(null);
+  const [phase, setPhase]         = useState<"tracing" | "glowing">("tracing");
 
-  /* Autoplay — solo activo en mobile */
+  /* Fase del borde mobile: traza una vuelta, luego "explota" en glow */
+  useEffect(() => {
+    setPhase("tracing");
+    const t = setTimeout(() => setPhase("glowing"), 3500);
+    return () => clearTimeout(t);
+  }, [active]);
+
+  /* Autoplay */
   useEffect(() => {
     if (paused) return;
     const id = setInterval(() => {
       setActive(prev => (prev + 1) % TESTIMONIOS.length);
-    }, 7000);
+    }, 9000);
     return () => clearInterval(id);
   }, [paused, active]);
 
@@ -223,9 +231,19 @@ export function Testimonios() {
             <motion.div
               key={active}
               initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
+              animate={{
+                opacity: 1,
+                x: 0,
+                boxShadow: phase === "glowing"
+                  ? "0 0 0 1.5px rgba(63,200,122,0.4), 0 8px 32px rgba(63,200,122,0.15)"
+                  : "0 0 0 0px rgba(63,200,122,0), 0 0px 0px rgba(63,200,122,0)",
+              }}
               exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{
+                opacity:   { duration: 0.35, ease: "easeOut" },
+                x:         { duration: 0.35, ease: "easeOut" },
+                boxShadow: { duration: 0.7,  ease: "easeOut" },
+              }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
@@ -239,24 +257,19 @@ export function Testimonios() {
               }}
               className="testimonio-card-wrapper"
             >
-              {/* SVG cometa dinámico — cola difusa + cuerpo brillante superpuestos */}
+              {/* SVG trazo único — una vuelta y desaparece cuando explota el glow */}
               <svg
                 aria-hidden="true"
                 className="absolute inset-0 pointer-events-none"
-                style={{ width: "100%", height: "100%", zIndex: 2 }}
+                style={{
+                  width: "100%", height: "100%", zIndex: 2,
+                  opacity: phase === "glowing" ? 0 : 1,
+                  transition: "opacity 0.6s ease-out",
+                }}
               >
                 <defs>
-                  {/* Glow amplio para la cola */}
-                  <filter id="glow-soft" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                  {/* Glow ajustado para el cuerpo */}
-                  <filter id="glow-sharp" x="-15%" y="-15%" width="130%" height="130%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+                  <filter id="stroke-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
                     <feMerge>
                       <feMergeNode in="blur" />
                       <feMergeNode in="SourceGraphic" />
@@ -264,40 +277,20 @@ export function Testimonios() {
                   </filter>
                 </defs>
 
-                {/* Contorno base siempre visible */}
                 <rect
                   x="1" y="1" rx="11" ry="11"
                   fill="none"
-                  stroke="rgba(63,200,122,0.08)"
-                  strokeWidth="1"
-                  style={{ width: "calc(100% - 2px)", height: "calc(100% - 2px)" }}
-                />
-
-                {/* Cola — larga, blur amplio, se arrastra 14% detrás del cuerpo */}
-                <rect
-                  x="1" y="1" rx="11" ry="11"
-                  fill="none" stroke="#3FC87A"
-                  strokeWidth="3" strokeLinecap="round"
-                  pathLength={100} strokeDasharray="22 78" strokeOpacity={0.35}
-                  filter="url(#glow-soft)"
+                  stroke="rgba(63,200,122,0.65)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  pathLength={100}
+                  strokeDasharray="12 88"
+                  filter="url(#stroke-glow)"
                   style={{
                     width: "calc(100% - 2px)", height: "calc(100% - 2px)",
-                    animation: "border-trace 7s linear infinite",
-                    animationDelay: "-4.5s",
-                  }}
-                />
-
-                {/* Cuerpo — corto, blur preciso, lidera el movimiento */}
-                <rect
-                  x="1" y="1" rx="11" ry="11"
-                  fill="none" stroke="#C4F5DD"
-                  strokeWidth="2" strokeLinecap="round"
-                  pathLength={100} strokeDasharray="10 90"
-                  filter="url(#glow-sharp)"
-                  style={{
-                    width: "calc(100% - 2px)", height: "calc(100% - 2px)",
-                    animation: "border-trace 7s linear infinite",
-                    animationDelay: "-5.5s",
+                    animation: "border-trace 3.5s linear",
+                    animationIterationCount: 1,
+                    animationFillMode: "forwards",
                   }}
                 />
               </svg>
