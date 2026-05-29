@@ -232,17 +232,17 @@ export function Testimonios() {
               key={active}
               initial={{ opacity: 0, x: 40 }}
               animate={{
-                opacity: 1,
-                x: 0,
-                boxShadow: phase === "glowing"
-                  ? "0 0 0 1.5px rgba(63,200,122,0.4), 0 8px 32px rgba(63,200,122,0.15)"
-                  : "0 0 0 0px rgba(63,200,122,0), 0 0px 0px rgba(63,200,122,0)",
+                opacity:     1,
+                x:           0,
+                borderColor: phase === "glowing"
+                  ? "rgba(63,200,122,0.4)"
+                  : "rgba(255,255,255,0.08)",
               }}
               exit={{ opacity: 0, x: -40 }}
               transition={{
-                opacity:   { duration: 0.35, ease: "easeOut" },
-                x:         { duration: 0.35, ease: "easeOut" },
-                boxShadow: { duration: 0.7,  ease: "easeOut" },
+                opacity:     { duration: 0.35, ease: "easeOut" },
+                x:           { duration: 0.35, ease: "easeOut" },
+                borderColor: { duration: 0.7,  ease: "easeOut" },
               }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
@@ -257,35 +257,24 @@ export function Testimonios() {
               }}
               className="testimonio-card-wrapper"
             >
-              {/* SVG trazo único — una vuelta y desaparece cuando explota el glow */}
+              {/* Trazo — una vuelta limpia, sin blur para evitar clipping */}
               <svg
                 aria-hidden="true"
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   width: "100%", height: "100%", zIndex: 2,
                   opacity: phase === "glowing" ? 0 : 1,
-                  transition: "opacity 0.6s ease-out",
+                  transition: "opacity 0.5s ease-out",
                 }}
               >
-                <defs>
-                  <filter id="stroke-glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-
                 <rect
                   x="1" y="1" rx="11" ry="11"
                   fill="none"
-                  stroke="rgba(63,200,122,0.65)"
+                  stroke="rgba(63,200,122,0.75)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   pathLength={100}
                   strokeDasharray="12 88"
-                  filter="url(#stroke-glow)"
                   style={{
                     width: "calc(100% - 2px)", height: "calc(100% - 2px)",
                     animation: "border-trace 3.5s linear",
@@ -294,6 +283,19 @@ export function Testimonios() {
                   }}
                 />
               </svg>
+
+              {/* Shimmer sweep — igual al efecto desktop, se activa al completar la vuelta */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  opacity:        phase === "glowing" ? 1 : 0,
+                  background:     "linear-gradient(120deg, transparent 30%, rgba(63,200,122,0.08) 50%, transparent 70%)",
+                  backgroundSize: "200% 100%",
+                  animation:      phase === "glowing" ? "shimmer 1.2s ease-in-out" : "none",
+                  transition:     "opacity 0.4s ease-out",
+                }}
+              />
+
               <div className="testimonio-card-content relative flex flex-col gap-5 p-5">
                 <CardContent
                   t={TESTIMONIOS[active]}

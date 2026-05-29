@@ -104,6 +104,7 @@ body {
   border-radius: 12px;
   overflow: hidden;
   isolation: isolate;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
 }
 
 .testimonio-card-content {
