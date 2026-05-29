@@ -130,7 +130,7 @@ export function Testimonios() {
   /* Fase del borde mobile: traza una vuelta, luego "explota" en glow */
   useEffect(() => {
     setPhase("tracing");
-    const t = setTimeout(() => setPhase("glowing"), 3500);
+    const t = setTimeout(() => setPhase("glowing"), 2500);
     return () => clearTimeout(t);
   }, [active]);
 
@@ -235,7 +235,7 @@ export function Testimonios() {
                 opacity:     1,
                 x:           0,
                 borderColor: phase === "glowing"
-                  ? "rgba(63,200,122,0.4)"
+                  ? "rgba(63,200,122,0.5)"
                   : "rgba(255,255,255,0.08)",
               }}
               exit={{ opacity: 0, x: -40 }}
@@ -270,14 +270,14 @@ export function Testimonios() {
                 <rect
                   x="1" y="1" rx="11" ry="11"
                   fill="none"
-                  stroke="rgba(63,200,122,0.75)"
+                  stroke="rgba(63,200,122,0.5)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   pathLength={100}
-                  strokeDasharray="12 88"
+                  strokeDasharray="28 72"
                   style={{
                     width: "calc(100% - 2px)", height: "calc(100% - 2px)",
-                    animation: "border-trace 3.5s linear",
+                    animation: "border-trace 2.5s linear",
                     animationIterationCount: 1,
                     animationFillMode: "forwards",
                   }}

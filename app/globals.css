@@ -115,5 +115,5 @@ body {
 }
 
 @keyframes border-trace {
-  to { stroke-dashoffset: -100; }
+  to { stroke-dashoffset: -72; }
 }
