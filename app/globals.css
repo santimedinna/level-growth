@@ -114,6 +114,7 @@ body {
   z-index: 1;
 }
 
-@keyframes border-trace {
-  to { stroke-dashoffset: -72; }
+@keyframes border-grow {
+  from { stroke-dasharray: 0 100; }
+  to   { stroke-dasharray: 100 0; }
 }

@@ -274,10 +274,10 @@ export function Testimonios() {
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   pathLength={100}
-                  strokeDasharray="28 72"
+                  strokeDasharray="0 100"
                   style={{
                     width: "calc(100% - 2px)", height: "calc(100% - 2px)",
-                    animation: "border-trace 2.5s linear",
+                    animation: "border-grow 2.5s linear",
                     animationIterationCount: 1,
                     animationFillMode: "forwards",
                   }}
