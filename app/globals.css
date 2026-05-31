@@ -43,6 +43,21 @@
   --gradient-text:  linear-gradient(90deg, #3FC87A, #4A9EE0);
   --gradient-cta:   linear-gradient(135deg, #2BA86A, #1a7a4e);
   --gradient-card:  linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+
+  /* Aliases --lg-* usados por las animaciones de MetodoLevelGrowth */
+  --lg-bg:             #080C14;
+  --lg-bg-secondary:   #0D1221;
+  --lg-bg-tertiary:    #111827;
+  --lg-green:          #3FC87A;
+  --lg-green-dark:     #2BA86A;
+  --lg-blue:           #4A9EE0;
+  --lg-blue-dark:      #0D1F4A;
+  --lg-text:           #FFFFFF;
+  --lg-text-secondary: #7A8FA6;
+  --lg-text-muted:     #4A6070;
+  --lg-border:         rgba(255, 255, 255, 0.08);
+  --lg-border-accent:  rgba(63, 200, 122, 0.25);
+  --lg-green-muted:    rgba(63, 200, 122, 0.12);
 }
 
 /* Reset base */
