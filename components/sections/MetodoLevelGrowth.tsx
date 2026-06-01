@@ -159,37 +159,45 @@ export function MetodoLevelGrowth() {
           </h2>
         </motion.div>
 
-        {/* Tab buttons */}
-        <div className="flex gap-0 overflow-x-auto mb-0 border-b border-white/[0.08]">
-          {TABS.map((t, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className="flex items-center gap-2 px-6 py-2 shrink-0 transition-all duration-300"
-              style={{
-                opacity:      active === i ? 1 : 0.5,
-                borderBottom: active === i ? "2px solid #3FC87A" : "2px solid transparent",
-                marginBottom: "-1px",
-              }}
-            >
-              <span className="font-mono text-xs" style={{ color: "#3FC87A" }}>{t.num} ·</span>
-              <span
-                className="font-body font-medium text-sm"
-                style={{ color: active === i ? "#fff" : "#7A8FA6" }}
-              >
-                {t.label}
-              </span>
-            </button>
-          ))}
-        </div>
+        {/* CSS para ocultar scrollbar en todos los browsers */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .tabs-container::-webkit-scrollbar { display: none; }
+          .tabs-container { scrollbar-width: none; -ms-overflow-style: none; }
+        ` }} />
 
-        {/* Bloque unificado — stage + barra + descripción */}
-        <div className="mx-auto w-full max-w-[920px] mt-6">
+        {/* Bloque unificado: tabs + stage + barra — mismo ancho, centrado */}
+        <div
+          className="mx-auto flex flex-col mt-6"
+          style={{ width: hasSize ? `${stageSize.width}px` : "100%" }}
+        >
+          {/* Corrección 1+2 — Tabs al ancho del stage, sin scrollbar visible */}
+          <div className="tabs-container flex gap-0 overflow-x-auto overflow-y-hidden border-b border-white/[0.08]">
+            {TABS.map((t, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className="flex items-center gap-2 px-6 py-2 shrink-0 transition-all duration-300"
+                style={{
+                  opacity:      active === i ? 1 : 0.5,
+                  borderBottom: active === i ? "2px solid #3FC87A" : "2px solid transparent",
+                  marginBottom: "-1px",
+                }}
+              >
+                <span className="font-mono text-xs" style={{ color: "#3FC87A" }}>{t.num} ·</span>
+                <span
+                  className="font-body font-medium text-sm"
+                  style={{ color: active === i ? "#fff" : "#7A8FA6" }}
+                >
+                  {t.label}
+                </span>
+              </button>
+            ))}
+          </div>
 
           {/* Stage: dimensiones computadas sin aspect-ratio fijo */}
           <div
             ref={containerRef}
-            className="relative rounded-2xl overflow-hidden mx-auto"
+            className="relative rounded-2xl overflow-hidden"
             style={{
               width:       hasSize ? `${stageSize.width}px`  : "100%",
               height:      hasSize ? `${stageSize.height}px` : undefined,
@@ -214,41 +222,50 @@ export function MetodoLevelGrowth() {
             ))}
           </div>
 
-          {/* Barra de progreso — solo decorativa, no interactiva */}
+          {/* Corrección 3 — Barra al mismo ancho del stage, no interactiva */}
           <div
-            className="relative h-[2px] bg-white/[0.06] mt-4"
-            style={{ pointerEvents: "none", userSelect: "none" }}
+            className="relative mt-3"
+            style={{
+              height:        "2px",
+              background:    "rgba(255,255,255,0.08)",
+              borderRadius:  "2px",
+              pointerEvents: "none",
+              userSelect:    "none",
+            }}
           >
             <div
-              className="absolute left-0 top-0 h-full"
               style={{
-                width:      `${progress * 100}%`,
-                background: "#3FC87A",
-                transition: "none",
+                height:       "100%",
+                width:        `${progress * 100}%`,
+                background:   "#3FC87A",
+                borderRadius: "2px",
+                transition:   "none",
               }}
             />
           </div>
+        </div>
 
-          {/* Descripción */}
-          <div className="mt-4 text-center min-h-[56px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <p className="font-body text-lg text-white">
-                  {TABS[active].line1}
-                </p>
-                <p className="font-body text-sm italic mt-2" style={{ color: "#7A8FA6" }}>
-                  {TABS[active].line2}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
+        {/* Descripción — mismo ancho que el stage */}
+        <div
+          className="mx-auto mt-4 text-center min-h-[56px]"
+          style={{ width: hasSize ? `${stageSize.width}px` : "100%" }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="font-body text-lg text-white">
+                {TABS[active].line1}
+              </p>
+              <p className="font-body text-sm italic mt-2" style={{ color: "#7A8FA6" }}>
+                {TABS[active].line2}
+              </p>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* CTA */}
