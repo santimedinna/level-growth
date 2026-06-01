@@ -128,20 +128,27 @@ const CSS = `
 import { useEffect, useRef } from "react";
 
 export function MetodoTab2({ isActive }: { isActive: boolean }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const wrapRef  = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
 
-  /* Scale stage to fit wrapper */
+  /* Scale stage to fit wrapper and center */
   useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const stageEl = el.querySelector<HTMLElement>(".stage")!;
-    const update = () => {
-      const { width, height } = el.getBoundingClientRect();
-      stageEl.style.transform = `scale(${Math.min(width / 1280, height / 800)})`;
+    const container = wrapRef.current;
+    const stage     = stageRef.current;
+    if (!container || !stage) return;
+    const fitStage = () => {
+      const { width, height } = container.getBoundingClientRect();
+      const scale   = Math.min(width / 1280, height / 800);
+      const offsetX = (width  - 1280 * scale) / 2;
+      const offsetY = (height - 800  * scale) / 2;
+      stage.style.transform       = `scale(${scale})`;
+      stage.style.transformOrigin = "top left";
+      stage.style.left            = `${offsetX}px`;
+      stage.style.top             = `${offsetY}px`;
     };
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    update();
+    const ro = new ResizeObserver(fitStage);
+    ro.observe(container);
+    fitStage();
     return () => ro.disconnect();
   }, []);
 
@@ -159,7 +166,7 @@ export function MetodoTab2({ isActive }: { isActive: boolean }) {
         className="t2-wrap"
         style={{ "--play-state": isActive ? "running" : "paused" } as React.CSSProperties}
       >
-        <div className="stage">
+        <div ref={stageRef} className="stage">
           <div className="timeline">
             <div className="spine"><div className="spine-fill" /></div>
             {/* Node 1 */}

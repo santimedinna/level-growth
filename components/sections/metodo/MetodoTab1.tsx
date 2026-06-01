@@ -192,7 +192,8 @@ const CSS = `
 const URL_TEXT = "miempresa.com";
 
 export function MetodoTab1({ isActive }: { isActive: boolean }) {
-  const wrapRef   = useRef<HTMLDivElement>(null);
+  const wrapRef    = useRef<HTMLDivElement>(null);
+  const stageRef   = useRef<HTMLDivElement>(null);
   const stoppedRef = useRef(false);
   const pausedRef  = useRef(!isActive);
 
@@ -212,18 +213,24 @@ export function MetodoTab1({ isActive }: { isActive: boolean }) {
       void t;
     }), []);
 
-  /* Scale stage to fit wrapper */
+  /* Scale stage to fit wrapper and center */
   useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const stageEl = el.querySelector<HTMLElement>(".stage")!;
-    const update = () => {
-      const { width, height } = el.getBoundingClientRect();
-      stageEl.style.transform = `scale(${Math.min(width / 1280, height / 800)})`;
+    const container = wrapRef.current;
+    const stage     = stageRef.current;
+    if (!container || !stage) return;
+    const fitStage = () => {
+      const { width, height } = container.getBoundingClientRect();
+      const scale   = Math.min(width / 1280, height / 800);
+      const offsetX = (width  - 1280 * scale) / 2;
+      const offsetY = (height - 800  * scale) / 2;
+      stage.style.transform       = `scale(${scale})`;
+      stage.style.transformOrigin = "top left";
+      stage.style.left            = `${offsetX}px`;
+      stage.style.top             = `${offsetY}px`;
     };
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    update();
+    const ro = new ResizeObserver(fitStage);
+    ro.observe(container);
+    fitStage();
     return () => ro.disconnect();
   }, []);
 
@@ -363,7 +370,7 @@ export function MetodoTab1({ isActive }: { isActive: boolean }) {
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div ref={wrapRef} className="t1-wrap">
-        <div className="stage">
+        <div ref={stageRef} className="stage">
           <div className="browser">
             <div className="bar">
               <div className="dots"><span /><span /><span /></div>

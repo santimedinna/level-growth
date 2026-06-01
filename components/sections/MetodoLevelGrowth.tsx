@@ -148,14 +148,10 @@ export function MetodoLevelGrowth() {
         {/* Mejoras 1, 2, 4.2 — stage + barra + descripción en un mismo bloque centrado */}
         <div className="mx-auto w-full max-w-[880px]">
 
-          {/* Mejora 1 — Stage reducido con max-height en desktop */}
+          {/* Stage — 9/16 mobile, 1280/800 desktop, max-height en desktop */}
           <div
-            className="relative w-full rounded-2xl overflow-hidden mt-6"
-            style={{
-              aspectRatio: "1280 / 800",
-              maxHeight:   "calc(100vh - 320px)",
-              background:  "#0D1221",
-            }}
+            className="relative w-full rounded-2xl overflow-hidden mt-6 aspect-[9/16] md:aspect-[1280/800] md:max-h-[calc(100vh-320px)]"
+            style={{ background: "#0D1221" }}
           >
             {TABS.map((_, i) => (
               <div
