@@ -40,8 +40,8 @@ const CaseStudy = dynamic(() =>
   import("@/components/sections/CaseStudy").then(m => ({ default: m.CaseStudy }))
 );
 
-const Process = dynamic(() =>
-  import("@/components/sections/Process").then(m => ({ default: m.Process }))
+const MetodoLevelGrowth = dynamic(() =>
+  import("@/components/sections/MetodoLevelGrowth").then(m => ({ default: m.MetodoLevelGrowth }))
 );
 
 const Pricing = dynamic(() =>
@@ -74,7 +74,7 @@ export default function Home() {
       <Santiago />
       <TrustLogos />
       <CaseStudy />
-      <Process />
+      <MetodoLevelGrowth />
       <Pricing />
       <FAQ />
       <CTAFinal />

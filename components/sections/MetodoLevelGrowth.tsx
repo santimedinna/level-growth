@@ -279,22 +279,6 @@ export function MetodoLevelGrowth() {
           </AnimatePresence>
         </div>
 
-        {/* CTA */}
-        <div className="text-center mt-12">
-          <p className="font-display text-2xl text-white mb-4">
-            Listo para crecer.
-          </p>
-          <a
-            href="/auditoria-web-gratis"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-body font-semibold text-white text-base transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
-            style={{
-              background: "linear-gradient(135deg, #3FC87A 0%, #2BA86A 55%, #1a7a4e 100%)",
-              boxShadow:  "0 0 20px rgba(43,168,106,0.3)",
-            }}
-          >
-            Auditá tu sitio gratis →
-          </a>
-        </div>
 
       </div>
     </section>
