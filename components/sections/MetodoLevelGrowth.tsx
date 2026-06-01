@@ -48,6 +48,7 @@ export function MetodoLevelGrowth() {
 
   const sectionRef   = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const tabRefs      = useRef<(HTMLButtonElement | null)[]>([]);
   const visibleRef   = useRef(true);
   const startRef     = useRef<number | null>(null);
   const rafRef       = useRef<number>(0);
@@ -124,6 +125,15 @@ export function MetodoLevelGrowth() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [active, tick]);
 
+  /* Scroll tab activo al centro del contenedor */
+  useEffect(() => {
+    tabRefs.current[active]?.scrollIntoView({
+      behavior: "smooth",
+      block:    "nearest",
+      inline:   "center",
+    });
+  }, [active]);
+
   function goTo(i: number) {
     setActive(i);
     setPaused(true);
@@ -175,6 +185,7 @@ export function MetodoLevelGrowth() {
             {TABS.map((t, i) => (
               <button
                 key={i}
+                ref={(el) => { tabRefs.current[i] = el; }}
                 onClick={() => goTo(i)}
                 className="flex items-center gap-2 px-6 py-2 shrink-0 transition-all duration-300"
                 style={{
