@@ -33,7 +33,6 @@ const TABS = [
   },
 ];
 
-/* Mejora 3 — duraciones individuales por tab */
 const TAB_DURATIONS = [
   18000, // Tab 1 — Auditoría
   11000, // Tab 2 — Diagnóstico
@@ -45,12 +44,49 @@ export function MetodoLevelGrowth() {
   const [active, setActive]     = useState(0);
   const [paused, setPaused]     = useState(false);
   const [progress, setProgress] = useState(0);
-  const sectionRef = useRef<HTMLElement>(null);
-  const visibleRef = useRef(true);
-  const startRef   = useRef<number | null>(null);
-  const rafRef     = useRef<number>(0);
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
 
-  /* IntersectionObserver — pause when section not visible */
+  const sectionRef   = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const visibleRef   = useRef(true);
+  const startRef     = useRef<number | null>(null);
+  const rafRef       = useRef<number>(0);
+
+  /* ── Sizing dinámico: ancho real × ratio 16:10, sin marco negro ── */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateSize = () => {
+      const parentWidth = container.parentElement?.clientWidth ?? 0;
+      const maxW = Math.min(parentWidth, 900);
+
+      let width  = maxW;
+      let height = width * (800 / 1280);
+
+      // cap de altura para que entre en pantallas bajas
+      const maxHeight = Math.min(window.innerHeight - 240, 600);
+      if (height > maxHeight) {
+        height = maxHeight;
+        width  = height * (1280 / 800);
+      }
+
+      setStageSize({ width, height });
+    };
+
+    updateSize();
+
+    const ro = new ResizeObserver(updateSize);
+    if (container.parentElement) ro.observe(container.parentElement);
+    window.addEventListener("resize", updateSize);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateSize);
+    };
+  }, []);
+
+  /* ── IntersectionObserver — pausa cuando la sección no está visible ── */
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -62,7 +98,7 @@ export function MetodoLevelGrowth() {
     return () => io.disconnect();
   }, []);
 
-  /* Progress bar + autoplay — usa la duración del tab activo */
+  /* ── Progress bar + autoplay ── */
   const tick = useCallback((ts: number) => {
     if (!visibleRef.current || paused) {
       startRef.current = null;
@@ -96,16 +132,18 @@ export function MetodoLevelGrowth() {
     setTimeout(() => setPaused(false), 10000);
   }
 
+  const hasSize = stageSize.width > 0;
+
   return (
     <section
       ref={sectionRef}
       id="metodo"
-      className="px-[clamp(1.5rem,5vw,4rem)] py-[clamp(3rem,8vw,6rem)]"
+      className="px-4 md:px-8 lg:px-16 py-[clamp(3rem,8vw,6rem)]"
       style={{ background: "#080C14" }}
     >
       <div className="max-w-[1200px] mx-auto">
 
-        {/* Mejora 4.1 — Header compacto */}
+        {/* Header */}
         <motion.div
           className="text-center mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -121,7 +159,7 @@ export function MetodoLevelGrowth() {
           </h2>
         </motion.div>
 
-        {/* Mejora 5 — Tab buttons compactos */}
+        {/* Tab buttons */}
         <div className="flex gap-0 overflow-x-auto mb-0 border-b border-white/[0.08]">
           {TABS.map((t, i) => (
             <button
@@ -145,13 +183,19 @@ export function MetodoLevelGrowth() {
           ))}
         </div>
 
-        {/* Mejoras 1, 2, 4.2 — stage + barra + descripción en un mismo bloque centrado */}
-        <div className="mx-auto w-full max-w-[880px]">
+        {/* Bloque unificado — stage + barra + descripción */}
+        <div className="mx-auto w-full max-w-[920px] mt-6">
 
-          {/* Stage — 9/16 mobile, 1280/800 desktop, max-height en desktop */}
+          {/* Stage: dimensiones computadas sin aspect-ratio fijo */}
           <div
-            className="relative w-full rounded-2xl overflow-hidden mt-6 aspect-[9/16] md:aspect-[1280/800] md:max-h-[calc(100vh-320px)]"
-            style={{ background: "#0D1221" }}
+            ref={containerRef}
+            className="relative rounded-2xl overflow-hidden mx-auto"
+            style={{
+              width:       hasSize ? `${stageSize.width}px`  : "100%",
+              height:      hasSize ? `${stageSize.height}px` : undefined,
+              aspectRatio: hasSize ? undefined : "1280/800",
+              background:  "#0D1221",
+            }}
           >
             {TABS.map((_, i) => (
               <div
@@ -170,16 +214,23 @@ export function MetodoLevelGrowth() {
             ))}
           </div>
 
-          {/* Mejora 2 — Barra de progreso debajo del stage */}
-          <div className="relative h-[2px] bg-white/[0.06] mt-4">
+          {/* Barra de progreso — solo decorativa, no interactiva */}
+          <div
+            className="relative h-[2px] bg-white/[0.06] mt-4"
+            style={{ pointerEvents: "none", userSelect: "none" }}
+          >
             <div
-              className="absolute left-0 top-0 h-full transition-none"
-              style={{ width: `${progress * 100}%`, background: "#3FC87A" }}
+              className="absolute left-0 top-0 h-full"
+              style={{
+                width:      `${progress * 100}%`,
+                background: "#3FC87A",
+                transition: "none",
+              }}
             />
           </div>
 
-          {/* Mejora 4.2 — Descripción unificada con el stage */}
-          <div className="mt-4 min-h-[56px]">
+          {/* Descripción */}
+          <div className="mt-4 text-center min-h-[56px]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
@@ -187,7 +238,6 @@ export function MetodoLevelGrowth() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-center"
               >
                 <p className="font-body text-lg text-white">
                   {TABS[active].line1}
@@ -201,7 +251,7 @@ export function MetodoLevelGrowth() {
 
         </div>
 
-        {/* Mejora 4.3 — CTA con mt-12 */}
+        {/* CTA */}
         <div className="text-center mt-12">
           <p className="font-display text-2xl text-white mb-4">
             Listo para crecer.
