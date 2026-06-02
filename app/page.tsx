@@ -16,32 +16,32 @@ const Pain = dynamic(() =>
   import("@/components/sections/Pain").then(m => ({ default: m.Pain }))
 );
 
-const AuditoriaCTA = dynamic(() =>
-  import("@/components/sections/AuditoriaCTA").then(m => ({ default: m.AuditoriaCTA }))
-);
-
-const Showroom = dynamic(() =>
-  import("@/components/sections/Showroom").then(m => ({ default: m.Showroom }))
-);
-
-const Santiago = dynamic(() =>
-  import("@/components/sections/Santiago").then(m => ({ default: m.Santiago }))
-);
-
-const Testimonios = dynamic(() =>
-  import("@/components/sections/Testimonios").then(m => ({ default: m.Testimonios }))
-);
-
-const TrustLogos = dynamic(() =>
-  import("@/components/sections/TrustLogos").then(m => ({ default: m.TrustLogos }))
-);
-
 const CaseStudy = dynamic(() =>
   import("@/components/sections/CaseStudy").then(m => ({ default: m.CaseStudy }))
 );
 
 const MetodoLevelGrowth = dynamic(() =>
   import("@/components/sections/MetodoLevelGrowth").then(m => ({ default: m.MetodoLevelGrowth }))
+);
+
+const Showroom = dynamic(() =>
+  import("@/components/sections/Showroom").then(m => ({ default: m.Showroom }))
+);
+
+const Testimonios = dynamic(() =>
+  import("@/components/sections/Testimonios").then(m => ({ default: m.Testimonios }))
+);
+
+const AuditoriaCTA = dynamic(() =>
+  import("@/components/sections/AuditoriaCTA").then(m => ({ default: m.AuditoriaCTA }))
+);
+
+const Santiago = dynamic(() =>
+  import("@/components/sections/Santiago").then(m => ({ default: m.Santiago }))
+);
+
+const TrustLogos = dynamic(() =>
+  import("@/components/sections/TrustLogos").then(m => ({ default: m.TrustLogos }))
 );
 
 const Pricing = dynamic(() =>
@@ -68,13 +68,13 @@ export default function Home() {
       <SchemaScript schema={buildFAQSchema(faqs)} />
       <Hero />
       <Pain />
-      <AuditoriaCTA />
-      <Showroom />
-      <Testimonios />
-      <Santiago />
-      <TrustLogos />
       <CaseStudy />
       <MetodoLevelGrowth />
+      <Showroom />
+      <Testimonios />
+      <AuditoriaCTA />
+      <Santiago />
+      <TrustLogos />
       <Pricing />
       <FAQ />
       <CTAFinal />
