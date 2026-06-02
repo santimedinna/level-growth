@@ -67,8 +67,8 @@ export function Header() {
 
           {/* CTA desktop */}
           <div className="hidden md:block">
-            <Button href="/contacto" size="sm">
-              Auditoría gratis
+            <Button href="/auditoria-web-gratis" size="sm">
+              Auditá gratis
             </Button>
           </div>
 
@@ -125,8 +125,8 @@ export function Header() {
             </a>
           ))}
           <div className="pt-2 pb-1">
-            <Button href="/contacto" size="sm" className="w-full justify-center">
-              Auditoría gratis
+            <Button href="/auditoria-web-gratis" size="sm" className="w-full justify-center">
+              Auditá gratis
             </Button>
           </div>
         </nav>

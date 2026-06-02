@@ -8,7 +8,7 @@ import { buildOrgWebsiteSchema } from "@/lib/schema";
 import "./globals.css";
 
 /* ─── WhatsApp flotante (solo mobile) ──────── */
-const WA_URL = "https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita.";
+const WA_URL = "https://wa.me/5493512613927?text=Hola!%20Tengo%20una%20consulta";
 
 /* ─── Fuentes ─────────────────────────────── */
 const syne = Syne({

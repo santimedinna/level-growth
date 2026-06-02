@@ -102,6 +102,15 @@ export function Footer() {
               )}
               <li>
                 <a
+                  href="/contacto"
+                  className="font-body text-sm text-lg-text-secondary hover:text-lg-text transition-colors duration-200"
+                >
+                  ¿Preferís dejarnos un mensaje?{" "}
+                  <span className="text-lg-text underline underline-offset-2">Contacto</span>
+                </a>
+              </li>
+              <li>
+                <a
                   href="/privacidad"
                   className="font-body text-sm text-lg-text-secondary hover:text-lg-text transition-colors duration-200"
                 >

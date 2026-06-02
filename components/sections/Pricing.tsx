@@ -24,6 +24,9 @@ function IconCheck() {
   );
 }
 
+/* ─── URL WhatsApp con mensaje de planes ─── */
+const WA_PLANES = "https://wa.me/5493512613927?text=Hola!%20Vi%20los%20planes%20y%20me%20interesa%20arrancar.%20%C2%BFMe%20pas%C3%A1s%20m%C3%A1s%20info%3F";
+
 /* ─── Datos de planes ─────────────────────── */
 const plans = [
   {
@@ -37,8 +40,8 @@ const plans = [
       "Reporte en PDF",
       "Llamada de 30 minutos",
     ],
-    cta:         "Solicitar auditoría",
-    ctaHref:     "/contacto",
+    cta:         "Quiero arrancar →",
+    ctaHref:     WA_PLANES,
     featured:    false,
   },
   {
@@ -52,8 +55,8 @@ const plans = [
       "Integración de WhatsApp y formulario",
       "Entrega en 7-10 días hábiles",
     ],
-    cta:         "Hablar con un especialista",
-    ctaHref:     "/contacto",
+    cta:         "Quiero arrancar →",
+    ctaHref:     WA_PLANES,
     featured:    true,
     badge:       "Más vendido",
   },
@@ -68,8 +71,8 @@ const plans = [
       "Gestión mensual de campañas",
       "Reportes de resultados",
     ],
-    cta:         "Hablar con un especialista",
-    ctaHref:     "/contacto",
+    cta:         "Quiero arrancar →",
+    ctaHref:     WA_PLANES,
     featured:    false,
   },
 ];
@@ -161,6 +164,7 @@ export function Pricing() {
                 {/* CTA */}
                 <Button
                   href={plan.ctaHref}
+                  external
                   variant={plan.featured ? "primary" : "secondary"}
                   className="w-full justify-center"
                 >

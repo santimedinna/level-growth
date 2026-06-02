@@ -46,26 +46,28 @@ export function CTAFinal() {
             variants={fadeUp}
             className="font-body text-[1.125rem] text-lg-text-secondary leading-[1.7] max-w-[520px]"
           >
-            La auditoría es gratuita. El diagnóstico es honesto.
-            Y si no encontramos nada para mejorar, te lo decimos.
+            Ya viste cómo trabajamos. Si querés que analicemos tu negocio, escribinos.
           </motion.p>
 
-          {/* CTA principal */}
+          {/* CTA primario — WhatsApp */}
           <motion.div variants={fadeUp}>
-            <Button href="/contacto" size="lg">
-              Quiero mi auditoría gratis →
+            <Button
+              href="https://wa.me/5493512613927?text=Hola!%20Estuve%20viendo%20la%20p%C3%A1gina%20y%20quiero%20que%20analicen%20mi%20negocio"
+              external
+              size="lg"
+            >
+              Hablemos por WhatsApp →
             </Button>
           </motion.div>
 
-          {/* Botón secundario WhatsApp */}
+          {/* CTA secundario — auditor */}
           <motion.div variants={fadeUp}>
             <Button
-              href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
-              external
+              href="/auditoria-web-gratis"
               variant="secondary"
               size="md"
             >
-              Escribinos por WhatsApp →
+              O auditá tu web gratis
             </Button>
           </motion.div>
         </motion.div>

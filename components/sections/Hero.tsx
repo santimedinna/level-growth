@@ -117,7 +117,7 @@ export function Hero() {
             Auditá tu web gratis →
           </Button>
           <Button
-            href="https://wa.me/5493512613927?text=Hola%20Santiago!%20Vi%20tu%20web%20y%20quiero%20saber%20m%C3%A1s%20sobre%20la%20auditor%C3%ADa%20gratuita."
+            href="https://wa.me/5493512613927?text=Hola!%20Quiero%20saber%20m%C3%A1s%20sobre%20lo%20que%20hacen"
             external
             variant="secondary"
             size="lg"
